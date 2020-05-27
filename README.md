@@ -1,10 +1,9 @@
 # GECToR – Grammatical Error Correction: Tag, Not Rewrite
 
 This repository provides code for training and testing state-of-the-art models for grammatical error correction with the official PyTorch implementation of the following paper:
-> GECToR – Grammatical Error Correction: Tag, Not Rewrite <br>
+> [GECToR – Grammatical Error Correction: Tag, Not Rewrite](https://arxiv.org/abs/2005.12592) <br>
 > [Kostiantyn Omelianchuk](https://github.com/komelianchuk), [Vitaliy Atrasevych](https://github.com/atrasevych), [Artem Chernodub](https://github.com/achernodub), [Oleksandr Skurzhanskyi](https://github.com/skurzhanskyi) <br>
 > Grammarly <br>
-> LINK ON ARXIV [TBD] <br>
 > [15th Workshop on Innovative Use of NLP for Building Educational Applications (co-located with ACL 2020)](https://sig-edu.org/bea/current) <br>
 
 It is mainly based on `AllenNLP` and `transformers`.
@@ -28,8 +27,8 @@ python utils/preprocess_data.py -s SOURCE -t TARGET -o OUTPUT_FILE
     <th>Pretrained encoder</th>
     <th>Confidence bias</th>
     <th>Min error prob</th>
-    <th>CoNNL-2014</th>
-    <th>BEA-2019</th>
+    <th>CoNNL-2014 (test)</th>
+    <th>BEA-2019 (test)</th>
   </tr>
   <tr>
     <th>BERT <a href="https://grammarly-nlp-data-public.s3.amazonaws.com/gector/bert_0_gector.th">[link]</a></th>
@@ -97,5 +96,12 @@ For evaluation use [M^2Scorer](https://github.com/nusnlp/m2scorer) and [ERRANT](
 ## Citation
 If you find this work is useful for your research, please cite our paper:
 ```
-TBD
+@misc{omelianchuk2020gector,
+    title={GECToR -- Grammatical Error Correction: Tag, Not Rewrite},
+    author={Kostiantyn Omelianchuk and Vitaliy Atrasevych and Artem Chernodub and Oleksandr Skurzhanskyi},
+    year={2020},
+    eprint={2005.12592},
+    archivePrefix={arXiv},
+    primaryClass={cs.CL}
+}
 ```
