@@ -83,9 +83,9 @@ In our experiments we had 98/2 train/dev split.
 ## Model inference
 To run your model on the input file use the following command:
 ```.bash
-python test_model.py --model_path MODEL_PATH [MODEL_PATH ...] \
-                     --vocab_path VOCAB_PATH --input_file INPUT_FILE \
-                     --output_file OUTPUT_FILE
+python predict.py --model_path MODEL_PATH [MODEL_PATH ...] \
+                  --vocab_path VOCAB_PATH --input_file INPUT_FILE \
+                  --output_file OUTPUT_FILE
 ```
 Among parameters:
 - `min_error_probability` - minimum error probability (as in the paper)
