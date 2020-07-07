@@ -35,7 +35,8 @@ def get_target_sent_by_edits(source_tokens, edits):
     for edit in edits:
         start, end, label, _ = edit
         target_pos = start + shift_idx
-        source_token = target_tokens[target_pos] if target_pos >= 0 else ''
+        source_token = target_tokens[target_pos] \
+            if len(target_tokens) > target_pos >= 0 else ''
         if label == "":
             del target_tokens[target_pos]
             shift_idx -= 1
