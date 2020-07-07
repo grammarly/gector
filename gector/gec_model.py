@@ -16,7 +16,7 @@ from allennlp.nn import util
 from gector.bert_token_embedder import PretrainedBertEmbedder
 from gector.seq2labels_model import Seq2Labels
 from gector.wordpiece_indexer import PretrainedBertIndexer
-from utils.helpers import PAD, UNK, get_target_sent_by_edits
+from utils.helpers import PAD, UNK, get_target_sent_by_edits, START_TOKEN
 
 logging.getLogger("werkzeug").setLevel(logging.ERROR)
 logger = logging.getLogger(__file__)
@@ -266,8 +266,12 @@ class GecBERTModel(object):
                 all_results.append(tokens)
                 continue
 
-            for i in range(length):
-                token = tokens[i - 1]  # because of START token
+            for i in range(length + 1):
+                # because of START token
+                if i == 0:
+                    token = START_TOKEN
+                else:
+                    token = tokens[i - 1]
                 # skip if there is no error
                 if idxs[i] == noop_index:
                     continue
