@@ -96,12 +96,19 @@ For evaluation use [M^2Scorer](https://github.com/nusnlp/m2scorer) and [ERRANT](
 ## Citation
 If you find this work is useful for your research, please cite our paper:
 ```
-@misc{omelianchuk2020gector,
-    title={GECToR -- Grammatical Error Correction: Tag, Not Rewrite},
-    author={Kostiantyn Omelianchuk and Vitaliy Atrasevych and Artem Chernodub and Oleksandr Skurzhanskyi},
-    year={2020},
-    eprint={2005.12592},
-    archivePrefix={arXiv},
-    primaryClass={cs.CL}
+@inproceedings{omelianchuk-etal-2020-gector,
+    title = "{GECT}o{R} {--} Grammatical Error Correction: Tag, Not Rewrite",
+    author = "Omelianchuk, Kostiantyn  and
+      Atrasevych, Vitaliy  and
+      Chernodub, Artem  and
+      Skurzhanskyi, Oleksandr",
+    booktitle = "Proceedings of the Fifteenth Workshop on Innovative Use of NLP for Building Educational Applications",
+    month = jul,
+    year = "2020",
+    address = "Seattle, WA, USA â†’ Online",
+    publisher = "Association for Computational Linguistics",
+    url = "https://www.aclweb.org/anthology/2020.bea-1.16",
+    pages = "163--170",
+    abstract = "In this paper, we present a simple and efficient GEC sequence tagger using a Transformer encoder. Our system is pre-trained on synthetic data and then fine-tuned in two stages: first on errorful corpora, and second on a combination of errorful and error-free parallel corpora. We design custom token-level transformations to map input tokens to target corrections. Our best single-model/ensemble GEC tagger achieves an F{\_}0.5 of 65.3/66.5 on CONLL-2014 (test) and F{\_}0.5 of 72.4/73.6 on BEA-2019 (test). Its inference speed is up to 10 times as fast as a Transformer-based seq2seq GEC system.",
 }
 ```
