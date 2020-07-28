@@ -93,6 +93,11 @@ Among parameters:
 - `special_tokens_fix` to reproduce some reported results of pretrained models
 
 For evaluation use [M^2Scorer](https://github.com/nusnlp/m2scorer) and [ERRANT](https://github.com/chrisjbryant/errant).
+
+## Parameters for training
+
+We described all parameters that we use for training and evaluating [here](https://github.com/grammarly/gector/blob/master/docs/training_parameters.md). 
+
 ## Citation
 If you find this work is useful for your research, please cite our paper:
 ```
