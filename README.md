@@ -80,6 +80,11 @@ There are a lot of parameters to specify among them:
 - `pieces_per_token` maximum number of subwords per token; helps not to get CUDA out of memory
 
 In our experiments we had 98/2 train/dev split.
+
+## Training parameters
+We described all parameters that we use for training and evaluating [here](https://github.com/grammarly/gector/blob/master/docs/training_parameters.md). 
+<br>
+
 ## Model inference
 To run your model on the input file use the following command:
 ```.bash
@@ -93,6 +98,7 @@ Among parameters:
 - `special_tokens_fix` to reproduce some reported results of pretrained models
 
 For evaluation use [M^2Scorer](https://github.com/nusnlp/m2scorer) and [ERRANT](https://github.com/chrisjbryant/errant).
+
 ## Citation
 If you find this work is useful for your research, please cite our paper:
 ```
