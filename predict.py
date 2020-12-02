@@ -33,7 +33,6 @@ def main(args):
                          max_len=args.max_len, min_len=args.min_len,
                          iterations=args.iteration_count,
                          min_error_probability=args.min_error_probability,
-                         min_probability=args.min_error_probability,
                          lowercase_tokens=args.lowercase_tokens,
                          model_name=args.transformer_model,
                          special_tokens_fix=args.special_tokens_fix,
@@ -94,11 +93,10 @@ if __name__ == '__main__':
                         type=float,
                         help='How many probability to add to $KEEP token.',
                         default=0)
-    parser.add_argument('--min_probability',
-                        type=float,
-                        default=0.0)
     parser.add_argument('--min_error_probability',
                         type=float,
+                        help='Minimum probability for each action to apply. '
+                             'Also, minimum error probability, as described in the paper.',
                         default=0.0)
     parser.add_argument('--special_tokens_fix',
                         type=int,
