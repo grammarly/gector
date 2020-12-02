@@ -142,8 +142,8 @@ class Seq2Labels(Model):
 
         if self.confidence > 0:
             probability_change = [self.confidence] + [0] * (self.num_labels_classes - 1)
-            class_probabilities_labels += torch.cuda.FloatTensor(probability_change).repeat(
-                (batch_size, sequence_length, 1))
+            class_probabilities_labels += torch.FloatTensor(probability_change).repeat(
+                (batch_size, sequence_length, 1)).to(class_probabilities_labels.device)
 
         output_dict = {"logits_labels": logits_labels,
                        "logits_d_tags": logits_d,
