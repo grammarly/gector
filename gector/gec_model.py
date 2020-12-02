@@ -55,7 +55,6 @@ class GecBERTModel(object):
                  lowercase_tokens=False,
                  log=False,
                  iterations=3,
-                 min_probability=0.0,
                  model_name='roberta',
                  special_tokens_fix=1,
                  is_ensemble=True,
@@ -68,7 +67,6 @@ class GecBERTModel(object):
         self.max_len = max_len
         self.min_len = min_len
         self.lowercase_tokens = lowercase_tokens
-        self.min_probability = min_probability
         self.min_error_probability = min_error_probability
         self.vocab = Vocabulary.from_files(vocab_path)
         self.log = log
@@ -149,7 +147,7 @@ class GecBERTModel(object):
     def get_token_action(self, token, index, prob, sugg_token):
         """Get lost of suggested actions for token."""
         # cases when we don't need to do anything
-        if prob < self.min_probability or sugg_token in [UNK, PAD, '$KEEP']:
+        if prob < self.min_error_probability or sugg_token in [UNK, PAD, '$KEEP']:
             return None
 
         if sugg_token.startswith('$REPLACE_') or sugg_token.startswith('$TRANSFORM_') or sugg_token == '$DELETE':
