@@ -195,9 +195,21 @@ def get_weights_name(transformer_name, lowercase):
         print('Warning! This model was trained only on cased sentences.')
     if transformer_name == 'roberta':
         return 'roberta-base'
+    if transformer_name == 'roberta-large':
+        return 'roberta-large'
     if transformer_name == 'gpt2':
         return 'gpt2'
     if transformer_name == 'transformerxl':
         return 'transfo-xl-wt103'
     if transformer_name == 'xlnet':
         return 'xlnet-base-cased'
+    if transformer_name == 'xlnet-large':
+        return 'xlnet-large-cased'
+    if transformer_name == 'deberta':
+        return 'microsoft/deberta-base'
+    if transformer_name == 'deberta-large':
+        return 'microsoft/deberta-large'
+    if transformer_name == 'bart':
+        return 'facebook/bart-base'
+    if transformer_name == 'bart-large':
+        return 'facebook/bart-large'

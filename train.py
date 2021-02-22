@@ -89,10 +89,18 @@ def get_model(model_name, vocab, tune_bert=False,
 
 
 def main(args):
+    
+    if args.cuda_device_index != -1:
+        os.environ['CUDA_VISIBLE_DEVICES'] = str(args.cuda_device_index)
+        os.environ['CUDA_DEVICE_ORDER']='PCI_BUS_ID'
+    
+    
     fix_seed()
     if not os.path.exists(args.model_dir):
         os.mkdir(args.model_dir)
 
+        
+    
     weights_name = get_weights_name(args.transformer_model, args.lowercase_tokens)
     # read datasets
     reader = get_data_reader(weights_name, args.max_len, skip_correct=bool(args.skip_correct),
@@ -149,12 +157,14 @@ def main(args):
         optimizer, factor=0.1, patience=10)
     instances_per_epoch = None if not args.updates_per_epoch else \
         int(args.updates_per_epoch * args.batch_size * args.accumulation_size)
+    
     iterator = BucketIterator(batch_size=args.batch_size,
                               sorting_keys=[("tokens", "num_tokens")],
                               biggest_batch_first=True,
                               max_instances_in_memory=args.batch_size * 20000,
                               instances_per_epoch=instances_per_epoch,
                               )
+    
     iterator.index_with(vocab)
     trainer = Trainer(model=model,
                       optimizer=optimizer,
@@ -291,13 +301,18 @@ if __name__ == '__main__':
                         help='The name of the pretrain weights in pretrain_folder param.',
                         default='')
     parser.add_argument('--transformer_model',
-                        choices=['bert', 'distilbert', 'gpt2', 'roberta', 'transformerxl', 'xlnet', 'albert'],
+                        choices=['bert', 'distilbert', 'gpt2', 'roberta', 'transformerxl', 'xlnet', 'albert', 'roberta-large', 'xlnet-large', 'deberta', 'deberta-large', 'bart', 'bart-large'],
                         help='Name of the transformer model.',
                         default='roberta')
     parser.add_argument('--special_tokens_fix',
                         type=int,
                         help='Whether to fix problem with [CLS], [SEP] tokens tokenization.',
                         default=1)
+    
+    parser.add_argument('--cuda_device_index',
+                        type=int,
+                        help='What card of gpu to use, if -1 use all',
+                        default=-1)
 
     args = parser.parse_args()
     main(args)
