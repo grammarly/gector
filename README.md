@@ -99,6 +99,9 @@ Among parameters:
 
 For evaluation use [M^2Scorer](https://github.com/nusnlp/m2scorer) and [ERRANT](https://github.com/chrisjbryant/errant).
 
+## Text Simplification
+The code and README for Text Simplification version of GECToR will be added soon.
+
 ## Citation
 If you find this work is useful for your research, please cite our paper:
 ```
