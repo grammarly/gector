@@ -13,7 +13,7 @@ from transformers import AutoTokenizer
 from utils.helpers import START_TOKEN
 
 from gector.tokenization import *
-
+import copy
 logger = logging.getLogger(__name__)
 
 # TODO(joelgrus): Figure out how to generate token_type_ids out of this token indexer.
@@ -88,6 +88,7 @@ class WordpieceIndexer(TokenIndexer[int]):
         super().__init__(token_min_padding_length)
         self.vocab = vocab
 
+        
         # The BERT code itself does a two-step tokenization:
         #    sentence -> [words], and then word -> [wordpieces]
         # In AllenNLP, the first step is implemented as the ``BertBasicWordSplitter``,
@@ -108,8 +109,8 @@ class WordpieceIndexer(TokenIndexer[int]):
         self.bpe_ranks = bpe_ranks
         self.byte_encoder = byte_encoder
 
-        if self.is_test:
-            self.max_pieces_per_token = None
+#         if self.is_test:
+#             self.max_pieces_per_token = None
 
         if never_lowercase is None:
             # Use the defaults
@@ -142,6 +143,7 @@ class WordpieceIndexer(TokenIndexer[int]):
                           index_name: str) -> Dict[str, List[int]]:
         text = [token.text for token in tokens]
         batch_tokens = [text]
+         
         output_fast = tokenize_batch(self.tokenizer,
                                      batch_tokens,
                                      max_bpe_length=self.max_pieces,
@@ -408,6 +410,7 @@ class PretrainedBertIndexer(WordpieceIndexer):
         sliding window.
     """
 
+    
     def __init__(self,
                  pretrained_model: str,
                  use_starting_offsets: bool = False,
@@ -418,15 +421,24 @@ class PretrainedBertIndexer(WordpieceIndexer):
                  is_test=False,
                  truncate_long_sequences: bool = True,
                  special_tokens_fix: int = 0) -> None:
+        
         if pretrained_model.endswith("-cased") and do_lowercase:
             logger.warning("Your BERT model appears to be cased, "
                            "but your indexer is lowercasing tokens.")
         elif pretrained_model.endswith("-uncased") and not do_lowercase:
             logger.warning("Your BERT model appears to be uncased, "
                            "but your indexer is not lowercasing tokens.")
-
+        
+        
+        model_name = copy.deepcopy(pretrained_model)
+        
+        if pretrained_model == 'microsoft/deberta-base':
+            model_name = 'roberta-base'
+        if pretrained_model == 'microsoft/deberta-large':
+            model_name = 'roberta-large'
+            
         bert_tokenizer = AutoTokenizer.from_pretrained(
-            pretrained_model, do_lower_case=do_lowercase, do_basic_tokenize=False, use_fast=True)
+            model_name, do_lower_case=do_lowercase, do_basic_tokenize=False, use_fast=True)
 
         # to adjust all tokenizers
         if hasattr(bert_tokenizer, 'encoder'):

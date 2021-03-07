@@ -1,5 +1,5 @@
 import argparse
-
+import os
 from utils.helpers import read_lines
 from gector.gec_model import GecBERTModel
 
@@ -28,6 +28,10 @@ def predict_for_file(input_file, output_file, model, batch_size=32):
 
 def main(args):
     # get all paths
+    if args.cuda_device_index != -1:
+        os.environ['CUDA_VISIBLE_DEVICES'] = str(args.cuda_device_index)
+        os.environ['CUDA_DEVICE_ORDER']='PCI_BUS_ID'
+    
     model = GecBERTModel(vocab_path=args.vocab_path,
                          model_paths=args.model_path,
                          max_len=args.max_len, min_len=args.min_len,
@@ -83,7 +87,7 @@ if __name__ == '__main__':
                         help='Whether to lowercase tokens.',
                         default=0)
     parser.add_argument('--transformer_model',
-                        choices=['bert', 'gpt2', 'transformerxl', 'xlnet', 'distilbert', 'roberta', 'albert', 'roberta-large', 'xlnet-large', 'deberta', 'deberta-large', 'bart', 'bart-large'],
+                        choices=['bert', 'gpt2', 'transformerxl', 'xlnet', 'distilbert', 'roberta', 'albert', 'roberta-large', 'xlnet-large', 'deberta', 'deberta-large', 'bart', 'bart-large', 'bert-large', 't5-base', 'funnel-transformer-medium-base', 'roberta-openai'],
                         help='Name of the transformer model.',
                         default='roberta')
     parser.add_argument('--iteration_count',
@@ -111,6 +115,10 @@ if __name__ == '__main__':
                         default=0)
     parser.add_argument('--weights',
                         help='Used to calculate weighted average', nargs='+',
-                        default=None)
+                        default=None),
+    parser.add_argument('--cuda_device_index',
+                        type=int,
+                        help='What card of gpu to use, if -1 use all',
+                        default=-1)
     args = parser.parse_args()
     main(args)

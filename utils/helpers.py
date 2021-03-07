@@ -181,8 +181,12 @@ def encode_verb_form(original_word, corrected_word):
 def get_weights_name(transformer_name, lowercase):
     if transformer_name == 'bert' and lowercase:
         return 'bert-base-uncased'
+    if transformer_name == 'bert-large' and lowercase:
+        return 'bert-large-uncased'
     if transformer_name == 'bert' and not lowercase:
         return 'bert-base-cased'
+    if transformer_name == 'bert-large' and not lowercase:
+        return 'bert-large-cased'
     if transformer_name == 'distilbert':
         if not lowercase:
             print('Warning! This model was trained only on uncased sentences.')
@@ -199,6 +203,8 @@ def get_weights_name(transformer_name, lowercase):
         return 'roberta-large'
     if transformer_name == 'gpt2':
         return 'gpt2'
+    if transformer_name == 't5-base':
+        return 't5-base'
     if transformer_name == 'transformerxl':
         return 'transfo-xl-wt103'
     if transformer_name == 'xlnet':
@@ -213,3 +219,10 @@ def get_weights_name(transformer_name, lowercase):
         return 'facebook/bart-base'
     if transformer_name == 'bart-large':
         return 'facebook/bart-large'
+    if transformer_name == 'funnel-transformer-medium-base':
+        return 'funnel-transformer/medium-base'
+    if transformer_name == 'roberta-openai':
+        return 'roberta-base-openai-detector'
+    
+    
+    

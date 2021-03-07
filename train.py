@@ -2,6 +2,9 @@ import argparse
 import os
 from random import seed
 
+def check_path(path):
+    os.system("if [ ! -d " + path + " ]; then mkdir -p " + path + "; fi")
+
 import torch
 from allennlp.data.iterators import BucketIterator
 from allennlp.data.vocabulary import DEFAULT_OOV_TOKEN, DEFAULT_PADDING_TOKEN
@@ -96,8 +99,9 @@ def main(args):
     
     
     fix_seed()
-    if not os.path.exists(args.model_dir):
-        os.mkdir(args.model_dir)
+#     if not os.path.exists(args.model_dir):
+#         os.mkdir(args.model_dir)
+    check_path(args.model_dir)
 
         
     
@@ -301,7 +305,7 @@ if __name__ == '__main__':
                         help='The name of the pretrain weights in pretrain_folder param.',
                         default='')
     parser.add_argument('--transformer_model',
-                        choices=['bert', 'distilbert', 'gpt2', 'roberta', 'transformerxl', 'xlnet', 'albert', 'roberta-large', 'xlnet-large', 'deberta', 'deberta-large', 'bart', 'bart-large'],
+                        choices=['bert', 'distilbert', 'gpt2', 'roberta', 'transformerxl', 'xlnet', 'albert', 'roberta-large', 'xlnet-large', 'deberta', 'deberta-large', 'bart', 'bart-large', 'bert-large', 't5-base', 'funnel-transformer-medium-base', 'roberta-openai'],
                         help='Name of the transformer model.',
                         default='roberta')
     parser.add_argument('--special_tokens_fix',
