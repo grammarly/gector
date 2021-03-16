@@ -1,33 +1,121 @@
 import argparse
 import os
+import time
+import datetime
 from utils.helpers import read_lines
 from gector.gec_model import GecBERTModel
+import torch
 
+# import spacy
+# nlp = spacy.load("en_core_web_sm")
+from difflib import SequenceMatcher
 
+def generate_text_for_log(processed_lines, total_lines, corrected_lines, prediction_duration, cnt_corrections):
+    return "Processed lines: "+str(processed_lines)+"/"+str(total_lines)+" = "+ str(round(100*processed_lines/total_lines, 2))+"%\n"+ "Corrected lines: "+ str(corrected_lines)+"/"+str(processed_lines)+" = "+ str(round(100*corrected_lines/processed_lines, 2))+"%\n"+ "Prediction duration: "+ str(prediction_duration)+"\n"+ "Total corrections: "+str(cnt_corrections)
+
+# def check_corrected_line_2(source, target):
+#     source_tokens = [token.text for token in list(nlp(source))]
+#     target_tokens = [token.text for token in list(nlp(target))]
+#     matcher = SequenceMatcher(None, source_tokens, target_tokens)
+#     raw_diffs = list(matcher.get_opcodes())
+#     if len(raw_diffs) == 1:
+#         if raw_diffs[0][0] == 'equal':
+#             return 0
+#     return 1
+   
+def check_corrected_line(source_tokens, target_tokens):
+    matcher = SequenceMatcher(None, source_tokens, target_tokens)
+    raw_diffs = list(matcher.get_opcodes())
+    if len(raw_diffs) == 1:
+        if raw_diffs[0][0] == 'equal':
+            return 0
+    return 1    
+    
+def count_corrected_lines_for_batch(source_batch, target_batch):
+    count_corrected = 0
+    for source, target in zip(source_batch, target_batch):
+        count_corrected += check_corrected_line(source, target)
+    return count_corrected
+                            
 def predict_for_file(input_file, output_file, model, batch_size=32):
     test_data = read_lines(input_file)
-    predictions = []
+#     predictions = []
     cnt_corrections = 0
     batch = []
+    with open(output_file, 'w') as f:
+        f.write("")
+    
+    with open(output_file+".log", 'w') as f:
+        f.write("")
+    
+    predicting_start_time = time.time()
+    
+    total_lines = len(test_data)
+    processed_lines = 0
+    corrected_lines = 0
+    
     for sent in test_data:
         batch.append(sent.split())
         if len(batch) == batch_size:
             preds, cnt = model.handle_batch(batch)
-            predictions.extend(preds)
+            
+            processed_lines += batch_size
+            
+#             source_sents = [" ".join(x) for x in batch]
+            pred_sents = [" ".join(x) for x in preds]
+            
+#             corrected_lines += count_corrected_lines_for_batch(source_sents, pred_sents)
+            corrected_lines += count_corrected_lines_for_batch(batch, preds)
+            
+            with open(output_file, 'a') as f:
+                f.write("\n".join(pred_sents) + '\n')
+            
             cnt_corrections += cnt
+            
+            predicting_elapsed_time = time.time() - predicting_start_time
+            prediction_duration = datetime.timedelta(seconds=predicting_elapsed_time)
+            
+            with open(output_file+".log", 'w') as f:
+                f.write(generate_text_for_log(processed_lines, total_lines, corrected_lines, prediction_duration, cnt_corrections))
+#             predictions.extend(preds)
+            
+            
             batch = []
     if batch:
         preds, cnt = model.handle_batch(batch)
-        predictions.extend(preds)
+        processed_lines += len(batch)
+        pred_sents = [" ".join(x) for x in preds]
+#         source_sents = [" ".join(x) for x in batch]
+
+#         corrected_lines += count_corrected_lines_for_batch(source_sents, pred_sents)
+        corrected_lines += count_corrected_lines_for_batch(batch, preds)
+
+        with open(output_file, 'a') as f:
+            f.write("\n".join(pred_sents) + '\n')
+
         cnt_corrections += cnt
 
-    with open(output_file, 'w') as f:
-        f.write("\n".join([" ".join(x) for x in predictions]) + '\n')
+        predicting_elapsed_time = time.time() - predicting_start_time
+        prediction_duration = datetime.timedelta(seconds=predicting_elapsed_time)
+
+        with open(output_file+".log", 'w') as f:
+            f.write(generate_text_for_log(processed_lines, total_lines, corrected_lines, prediction_duration, cnt_corrections))
+        
+        #predictions.extend(preds)
+        cnt_corrections += cnt
+
+#     with open(output_file, 'w') as f:
+#         f.write("\n".join([" ".join(x) for x in predictions]) + '\n')
     return cnt_corrections
 
 
 def main(args):
     # get all paths
+#     if args.count_thread != -1:
+#         torch.set_num_threads = str(args.count_thread)
+#         os.environ["OMP_NUM_THREADS"] = str(args.count_thread)
+#         os.environ["MKL_NUM_THREADS"] = str(args.count_thread)
+    
     if args.cuda_device_index != -1:
         os.environ['CUDA_VISIBLE_DEVICES'] = str(args.cuda_device_index)
         os.environ['CUDA_DEVICE_ORDER']='PCI_BUS_ID'
@@ -44,7 +132,8 @@ def main(args):
                          log=False,
                          confidence=args.additional_confidence,
                          is_ensemble=args.is_ensemble,
-                         weigths=args.weights)
+                         weigths=args.weights,
+                         use_cpu=bool(args.use_cpu))
 
     cnt_corrections = predict_for_file(args.input_file, args.output_file, model,
                                        batch_size=args.batch_size)
@@ -119,6 +208,14 @@ if __name__ == '__main__':
     parser.add_argument('--cuda_device_index',
                         type=int,
                         help='What card of gpu to use, if -1 use all',
+                        default=-1)
+    parser.add_argument('--use_cpu',
+                        type=int,
+                        help='use only cpu',
+                        default=0)
+    parser.add_argument('--count_thread',
+                        type=int,
+                        help='count of cpus/threads',
                         default=-1)
     args = parser.parse_args()
     main(args)

@@ -60,9 +60,11 @@ class Seq2Labels(Model):
                  label_smoothing: float = 0.0,
                  confidence: float = 0.0,
                  initializer: InitializerApplicator = InitializerApplicator(),
-                 regularizer: Optional[RegularizerApplicator] = None) -> None:
+                 regularizer: Optional[RegularizerApplicator] = None,
+                 use_cpu: bool = False) -> None:
         super(Seq2Labels, self).__init__(vocab, regularizer)
 
+        self.use_cpu = use_cpu
         self.label_namespaces = [labels_namespace,
                                  detect_namespace]
         self.text_field_embedder = text_field_embedder
@@ -142,8 +144,13 @@ class Seq2Labels(Model):
 
         if self.confidence > 0:
             probability_change = [self.confidence] + [0] * (self.num_labels_classes - 1)
-            class_probabilities_labels += torch.cuda.FloatTensor(probability_change).repeat(
+            if self.use_cpu:
+                class_probabilities_labels += torch.FloatTensor(probability_change).repeat(
                 (batch_size, sequence_length, 1))
+            else:
+                class_probabilities_labels += torch.cuda.FloatTensor(probability_change).repeat(
+                (batch_size, sequence_length, 1))
+            
 
         output_dict = {"logits_labels": logits_labels,
                        "logits_d_tags": logits_d,

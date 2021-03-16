@@ -62,9 +62,11 @@ class GecBERTModel(object):
                  min_error_probability=0.0,
                  confidence=0,
                  resolve_cycles=False,
+                 use_cpu=False
                  ):
+        self.use_cpu = use_cpu
         self.model_weights = list(map(float, weigths)) if weigths else [1] * len(model_paths)
-        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() and self.use_cpu == False else "cpu")
         self.max_len = max_len
         self.min_len = min_len
         self.lowercase_tokens = lowercase_tokens
@@ -86,9 +88,9 @@ class GecBERTModel(object):
             self.indexers.append(self._get_indexer(weights_name, special_tokens_fix))
             model = Seq2Labels(vocab=self.vocab,
                                text_field_embedder=self._get_embbeder(weights_name, special_tokens_fix),
-                               confidence=self.confidence
+                               confidence=self.confidence, use_cpu=self.use_cpu
                                ).to(self.device)
-            if torch.cuda.is_available():
+            if torch.cuda.is_available() and self.use_cpu == False:
                 model.load_state_dict(torch.load(model_path))
             else:
                 model.load_state_dict(torch.load(model_path,
@@ -110,7 +112,7 @@ class GecBERTModel(object):
             filenames = [input_path]
         for model_path in filenames:
             try:
-                if torch.cuda.is_available():
+                if torch.cuda.is_available() and self.use_cpu == False:
                     loaded_model = torch.load(model_path)
                 else:
                     loaded_model = torch.load(model_path,
@@ -135,7 +137,7 @@ class GecBERTModel(object):
         t11 = time()
         predictions = []
         for batch, model in zip(batches, self.models):
-            batch = util.move_to_device(batch.as_tensor_dict(), 0 if torch.cuda.is_available() else -1)
+            batch = util.move_to_device(batch.as_tensor_dict(), 0 if torch.cuda.is_available() and self.use_cpu == False else -1)
             with torch.no_grad():
                 prediction = model.forward(**batch)
             predictions.append(prediction)
