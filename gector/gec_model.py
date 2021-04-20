@@ -34,7 +34,7 @@ def get_weights_name(transformer_name, lowercase):
     if transformer_name == 'albert':
         if not lowercase:
             print('Warning! This model was trained only on uncased sentences.')
-        return 'albert-base-v1'
+        return 'albert-base-v2'
     if lowercase:
         print('Warning! This model was trained only on cased sentences.')
     if transformer_name == 'roberta':
