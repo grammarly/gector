@@ -3,6 +3,13 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Ignore pickles
+*.pkl
+**/*.pkl
+
+*.pickle
+**/*.pickle
+
 # C extensions
 *.so
 
