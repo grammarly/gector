@@ -101,8 +101,8 @@ def select_lines_with_changes(input_source, input_target,
             output_source_lines = []
             output_target_lines = []
             
-    write_lines(output_source, output_source_lines, mode='w')
-    write_lines(output_target, output_target_lines, mode='w')
+    write_lines(output_source, output_source_lines, mode='a')
+    write_lines(output_target, output_target_lines, mode='a')
     text_for_log = generate_text_for_log(processed_lines, 
                           total_lines, 
                           corrected_lines, 

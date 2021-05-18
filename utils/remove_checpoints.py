@@ -2,17 +2,21 @@ import argparse
 import os
 import glob
 
-def main(args):
-    path = args.source
+def remove_checkpoints(path):
     if path[-1] != '/':
         path += '/'
     all_checkpoints = glob.glob(path+"*.th")
     count_delated = 0
     for checkpoint in all_checkpoints:
-        if checkpoint != path+'best.th':
+        if "training_state_epoch" in checkpoint:
+#         if checkpoint != path+'best.th':
             os.remove(checkpoint)
             count_delated += 1
     print("Deleted files:", count_delated)
+
+def main(args):
+    path = args.source
+    remove_checkpoints(path)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

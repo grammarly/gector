@@ -436,6 +436,10 @@ class PretrainedBertIndexer(WordpieceIndexer):
             model_name = 'roberta-base'
         if pretrained_model == 'microsoft/deberta-large':
             model_name = 'roberta-large'
+        if pretrained_model == 'microsoft/deberta-xx-large':
+            model_name = 'roberta-large'
+        if pretrained_model == 'microsoft/deberta-xlarge':
+            model_name = 'roberta-large'
             
         bert_tokenizer = AutoTokenizer.from_pretrained(
             model_name, do_lower_case=do_lowercase, do_basic_tokenize=False, use_fast=True)

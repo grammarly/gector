@@ -31,13 +31,13 @@ def check_corrected_line(source_tokens, target_tokens):
             return 0
     return 1    
     
-def count_corrected_lines_for_batch(source_batch, target_batch):
-    count_corrected = 0
+def get_corrected_lines_for_batch(source_batch, target_batch):
+    corrected = []
     for source, target in zip(source_batch, target_batch):
-        count_corrected += check_corrected_line(source, target)
-    return count_corrected
+        corrected.append(check_corrected_line(source, target))
+    return corrected
                             
-def predict_for_file(input_file, output_file, model, batch_size=32):
+def predict_for_file(input_file, output_file, model, batch_size=32, save_logs=0):
     test_data = read_lines(input_file)
 #     predictions = []
     cnt_corrections = 0
@@ -45,8 +45,12 @@ def predict_for_file(input_file, output_file, model, batch_size=32):
     with open(output_file, 'w') as f:
         f.write("")
     
-    with open(output_file+".log", 'w') as f:
-        f.write("")
+    if save_logs:
+        with open(output_file+".log", 'w') as f:
+            f.write("")
+
+        with open(output_file+".check_correction", 'w') as f:
+            f.write("")
     
     predicting_start_time = time.time()
     
@@ -60,52 +64,60 @@ def predict_for_file(input_file, output_file, model, batch_size=32):
             preds, cnt = model.handle_batch(batch)
             
             processed_lines += batch_size
-            
-#             source_sents = [" ".join(x) for x in batch]
+              
             pred_sents = [" ".join(x) for x in preds]
-            
-#             corrected_lines += count_corrected_lines_for_batch(source_sents, pred_sents)
-            corrected_lines += count_corrected_lines_for_batch(batch, preds)
             
             with open(output_file, 'a') as f:
                 f.write("\n".join(pred_sents) + '\n')
-            
+                
             cnt_corrections += cnt
             
-            predicting_elapsed_time = time.time() - predicting_start_time
-            prediction_duration = datetime.timedelta(seconds=predicting_elapsed_time)
+            if save_logs:
+                checked_lines = get_corrected_lines_for_batch(batch, preds)
+                corrected_lines += sum(checked_lines)
+                checked_lines = [str(s) for s in checked_lines]
+                with open(output_file+".check_correction", 'a') as f:
+                    f.write("\n".join(checked_lines) + '\n')
             
-            with open(output_file+".log", 'w') as f:
-                f.write(generate_text_for_log(processed_lines, total_lines, corrected_lines, prediction_duration, cnt_corrections))
-#             predictions.extend(preds)
-            
-            
+                predicting_elapsed_time = time.time() - predicting_start_time
+                prediction_duration = datetime.timedelta(seconds=predicting_elapsed_time)
+
+                with open(output_file+".log", 'w') as f:
+                    f.write(generate_text_for_log(processed_lines, total_lines, corrected_lines, prediction_duration, cnt_corrections))
+
+
             batch = []
     if batch:
         preds, cnt = model.handle_batch(batch)
         processed_lines += len(batch)
-        pred_sents = [" ".join(x) for x in preds]
-#         source_sents = [" ".join(x) for x in batch]
-
-#         corrected_lines += count_corrected_lines_for_batch(source_sents, pred_sents)
-        corrected_lines += count_corrected_lines_for_batch(batch, preds)
-
+        pred_sents = [" ".join(x) for x in preds]   
+        
         with open(output_file, 'a') as f:
             f.write("\n".join(pred_sents) + '\n')
-
-        cnt_corrections += cnt
-
-        predicting_elapsed_time = time.time() - predicting_start_time
-        prediction_duration = datetime.timedelta(seconds=predicting_elapsed_time)
-
-        with open(output_file+".log", 'w') as f:
-            f.write(generate_text_for_log(processed_lines, total_lines, corrected_lines, prediction_duration, cnt_corrections))
         
-        #predictions.extend(preds)
         cnt_corrections += cnt
+        
+        checked_lines = get_corrected_lines_for_batch(batch, preds)    
+        corrected_lines += sum(checked_lines)
+        checked_lines = [str(s) for s in checked_lines]
 
-#     with open(output_file, 'w') as f:
-#         f.write("\n".join([" ".join(x) for x in predictions]) + '\n')
+        if save_logs:
+        
+            with open(output_file+".check_correction", 'a') as f:
+                    f.write("\n".join(checked_lines) + '\n')
+
+
+            predicting_elapsed_time = time.time() - predicting_start_time
+            prediction_duration = datetime.timedelta(seconds=predicting_elapsed_time)
+
+            with open(output_file+".log", 'w') as f:
+                f.write(generate_text_for_log(processed_lines, total_lines, corrected_lines, prediction_duration, cnt_corrections))
+    
+    predicting_elapsed_time = time.time() - predicting_start_time
+    prediction_duration = datetime.timedelta(seconds=predicting_elapsed_time)
+    
+    print(prediction_duration)
+    
     return cnt_corrections
 
 
@@ -136,7 +148,7 @@ def main(args):
                          use_cpu=bool(args.use_cpu))
 
     cnt_corrections = predict_for_file(args.input_file, args.output_file, model,
-                                       batch_size=args.batch_size)
+                                       batch_size=args.batch_size, save_logs=args.save_logs)
     # evaluate with m2 or ERRANT
     print(f"Produced overall corrections: {cnt_corrections}")
 
@@ -176,7 +188,7 @@ if __name__ == '__main__':
                         help='Whether to lowercase tokens.',
                         default=0)
     parser.add_argument('--transformer_model',
-                        choices=['bert', 'gpt2', 'transformerxl', 'xlnet', 'distilbert', 'roberta', 'albert', 'roberta-large', 'xlnet-large', 'deberta', 'deberta-large', 'bart', 'bart-large', 'bert-large', 't5-base', 'funnel-transformer-medium-base', 'roberta-openai'],
+                        choices=['bert', 'gpt2', 'transformerxl', 'xlnet', 'distilbert', 'roberta', 'albert', 'roberta-large', 'xlnet-large', 'deberta', 'deberta-large', 'bart', 'bart-large', 'bert-large', 't5-base', 'funnel-transformer-medium-base', 'roberta-openai', 'deberta-xx-large', 'deberta-xlarge', 'ukr-roberta-base'],
                         help='Name of the transformer model.',
                         default='roberta')
     parser.add_argument('--iteration_count',
@@ -217,5 +229,9 @@ if __name__ == '__main__':
                         type=int,
                         help='count of cpus/threads',
                         default=-1)
+    parser.add_argument('--save_logs',
+                        type=int,
+                        help='count of cpus/threads',
+                        default=0)
     args = parser.parse_args()
     main(args)

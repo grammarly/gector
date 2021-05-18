@@ -223,6 +223,12 @@ def get_weights_name(transformer_name, lowercase):
         return 'funnel-transformer/medium-base'
     if transformer_name == 'roberta-openai':
         return 'roberta-base-openai-detector'
+    if transformer_name == 'deberta-xlarge':
+        return 'microsoft/deberta-xlarge'
+    if transformer_name == 'deberta-xx-large':
+        return 'microsoft/deberta-v2-xxlarge'
+    if transformer_name == 'ukr-roberta-base':
+        return 'youscan/ukr-roberta-base'
     
     
     
