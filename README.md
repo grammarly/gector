@@ -25,6 +25,7 @@ To train the model data has to be preprocessed and converted to special format w
 python utils/preprocess_data.py -s SOURCE -t TARGET -o OUTPUT_FILE
 ```
 ## Pretrained models
+All available pretrained models can be downloaded [here](https://drive.google.com/drive/folders/10-rECSEFvFpDf8wXDP9l_58mXhDPWjP5?usp=sharing).<br>
 <table>
   <tr>
     <th>Pretrained encoder</th>
