@@ -407,7 +407,7 @@ class PretrainedBertIndexer(WordpieceIndexer):
                            "but your indexer is not lowercasing tokens.")
 
         bert_tokenizer = AutoTokenizer.from_pretrained(
-            pretrained_model, do_lower_case=do_lowercase, do_basic_tokenize=False)
+            pretrained_model, do_lower_case=do_lowercase, do_basic_tokenize=False,  use_fast=False)
 
         # to adjust all tokenizers
         if hasattr(bert_tokenizer, 'encoder'):
