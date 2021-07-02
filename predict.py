@@ -1,7 +1,29 @@
 import argparse
+import sys
+sys.path.append("/home/stud-leonardbongard/Bachelor_Arbeit/ba-leonard-bongard/models/submodules/gector")
 
 from utils.helpers import read_lines
 from gector.gec_model import GecBERTModel
+
+def create_model(config):
+    """
+    Init the gector model
+    """
+    model = GecBERTModel(vocab_path=config.vocab_path,
+                         model_paths=config.model_path,
+                         max_len=config.max_len, min_len=config.min_len,
+                         iterations=config.iteration_count,
+                         min_error_probability=config.min_error_probability,
+                         lowercase_tokens=config.lowercase_tokens,
+                         model_name=config.transformer_model,
+                         special_tokens_fix=config.special_tokens_fix,
+                         log=False,
+                         confidence=config.additional_confidence,
+                         is_ensemble=config.is_ensemble,
+                         weigths=config.weights)
+
+    return model
+
 
 
 def predict_for_file(input_file, output_file, model, batch_size=32):
