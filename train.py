@@ -12,7 +12,7 @@ from gector.bert_token_embedder import PretrainedBertEmbedder
 from gector.datareader import Seq2LabelsDatasetReader
 from gector.seq2labels_model import Seq2Labels
 from gector.trainer import Trainer
-from gector.wordpiece_indexer import PretrainedBertIndexer
+from gector.tokenizer_indexer import PretrainedBertIndexer
 from utils.helpers import get_weights_name
 
 

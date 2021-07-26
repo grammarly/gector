@@ -15,7 +15,7 @@ from allennlp.nn import util
 
 from gector.bert_token_embedder import PretrainedBertEmbedder
 from gector.seq2labels_model import Seq2Labels
-from gector.wordpiece_indexer import PretrainedBertIndexer
+from gector.tokenizer_indexer import PretrainedBertIndexer
 from utils.helpers import PAD, UNK, get_target_sent_by_edits, START_TOKEN
 
 logging.getLogger("werkzeug").setLevel(logging.ERROR)
@@ -186,8 +186,7 @@ class GecBERTModel(object):
             max_pieces_per_token=5,
             use_starting_offsets=True,
             truncate_long_sequences=True,
-            special_tokens_fix=special_tokens_fix,
-            is_test=True
+            special_tokens_fix=special_tokens_fix
         )
         return {'bert': bert_token_indexer}
 
