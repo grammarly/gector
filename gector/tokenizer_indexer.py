@@ -70,10 +70,10 @@ class TokenizerIndexer(TokenIndexer[int]):
 
     def __init__(self,
                  tokenizer: Callable[[str], List[str]],
-                 #vocab: Dict[str, int],
+                 vocab: Dict[str, int],
                  bpe_ranks: Dict,
                  byte_encoder: Dict,
-                 #wordpiece_tokenizer: Callable[[str], List[str]],
+                 wordpiece_tokenizer: Callable[[str], List[str]],
                  namespace: str = "wordpiece",
                  use_starting_offsets: bool = False,
                  max_pieces: int = 512,
@@ -86,7 +86,7 @@ class TokenizerIndexer(TokenIndexer[int]):
                  truncate_long_sequences: bool = True,
                  token_min_padding_length: int = 0) -> None:
         super().__init__(token_min_padding_length)
-        #self.vocab = vocab
+        self.vocab = vocab
 
 
         # The BERT code itself does a two-step tokenization:
@@ -95,7 +95,7 @@ class TokenizerIndexer(TokenIndexer[int]):
         # and this token indexer handles the second.
 
         self.tokenizer = tokenizer
-        #self.wordpiece_tokenizer = wordpiece_tokenizer
+        self.wordpiece_tokenizer = wordpiece_tokenizer
         self.max_pieces_per_token = max_pieces_per_token
         self._namespace = namespace
         self._added_to_vocabulary = False
@@ -106,8 +106,8 @@ class TokenizerIndexer(TokenIndexer[int]):
         self.max_pieces_per_sentence = 80
         #self.is_test = is_test
         self.cache = {}
-        #self.bpe_ranks = bpe_ranks
-        #self.byte_encoder = byte_encoder
+        self.bpe_ranks = bpe_ranks
+        self.byte_encoder = byte_encoder
 
 #         if self.is_test:
 #             self.max_pieces_per_token = None
@@ -137,7 +137,7 @@ class TokenizerIndexer(TokenIndexer[int]):
                                      batch_tokens,
                                      max_bpe_length=self.max_pieces,
                                      max_bpe_pieces=self.max_pieces_per_token)
-        output_fast = {k:v[0] for k,v in output_fast.items()}
+        output_fast = {k: v[0] for k, v in output_fast.items()}
         return output_fast
 
     # def _add_encoding_to_vocabulary(self, vocabulary: Vocabulary) -> None:
@@ -460,14 +460,14 @@ class PretrainedBertIndexer(TokenizerIndexer):
 #         else:
 #             bpe_ranks = {}
 #             byte_encoder = None
-        #bpe_ranks = {}
-        #byte_encoder = {}
+        bpe_ranks = {}
+        byte_encoder = {}
 
         super().__init__(tokenizer=model_tokenizer,
-                         #vocab=model_tokenizer.vocab,
-                         #bpe_ranks=bpe_ranks,
-                         #byte_encoder=byte_encoder,
-                         #wordpiece_tokenizer=model_tokenizer.tokenize,
+                         vocab=model_tokenizer.vocab,
+                         bpe_ranks=bpe_ranks,
+                         byte_encoder=byte_encoder,
+                         wordpiece_tokenizer=model_tokenizer.tokenize,
                          namespace="bert",
                          use_starting_offsets=use_starting_offsets,
                          max_pieces=max_pieces,
