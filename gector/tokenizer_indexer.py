@@ -70,23 +70,23 @@ class TokenizerIndexer(TokenIndexer[int]):
 
     def __init__(self,
                  tokenizer: Callable[[str], List[str]],
-                 vocab: Dict[str, int],
+                 #vocab: Dict[str, int],
                  # bpe_ranks: Dict,
                  # byte_encoder: Dict,
-                 wordpiece_tokenizer: Callable[[str], List[str]],
+                 #wordpiece_tokenizer: Callable[[str], List[str]],
                  namespace: str = "wordpiece",
                  use_starting_offsets: bool = False,
                  max_pieces: int = 512,
                  max_pieces_per_token: int = 3,
                  #is_test=False,
                  do_lowercase: bool = False,
-                 never_lowercase: List[str] = None,
-                 start_tokens: List[str] = None,
-                 end_tokens: List[str] = None,
+                 #never_lowercase: List[str] = None,
+                 #start_tokens: List[str] = None,
+                 #end_tokens: List[str] = None,
                  truncate_long_sequences: bool = True,
                  token_min_padding_length: int = 0) -> None:
         super().__init__(token_min_padding_length)
-        self.vocab = vocab
+        #self.vocab = vocab
 
 
         # The BERT code itself does a two-step tokenization:
@@ -95,7 +95,7 @@ class TokenizerIndexer(TokenIndexer[int]):
         # and this token indexer handles the second.
 
         self.tokenizer = tokenizer
-        self.wordpiece_tokenizer = wordpiece_tokenizer
+        #self.wordpiece_tokenizer = wordpiece_tokenizer
         self.max_pieces_per_token = max_pieces_per_token
         self._namespace = namespace
         self._added_to_vocabulary = False
@@ -112,22 +112,22 @@ class TokenizerIndexer(TokenIndexer[int]):
 #         if self.is_test:
 #             self.max_pieces_per_token = None
 
-        if never_lowercase is None:
-            # Use the defaults
-            self._never_lowercase = set(_NEVER_LOWERCASE)
-        else:
-            self._never_lowercase = set(never_lowercase)
-
-        # Convert the start_tokens and end_tokens to wordpiece_ids
-        self._start_piece_ids = [vocab[wordpiece]
-                                 for token in (start_tokens or [])
-                                 for wordpiece in wordpiece_tokenizer(token)]
-        self._end_piece_ids = [vocab[wordpiece]
-                               for token in (end_tokens or [])
-                               for wordpiece in wordpiece_tokenizer(token)]
+        # if never_lowercase is None:
+        #     # Use the defaults
+        #     self._never_lowercase = set(_NEVER_LOWERCASE)
+        # else:
+        #     self._never_lowercase = set(never_lowercase)
+        #
+        # # Convert the start_tokens and end_tokens to wordpiece_ids
+        # self._start_piece_ids = [vocab[wordpiece]
+        #                          for token in (start_tokens or [])
+        #                          for wordpiece in wordpiece_tokenizer(token)]
+        # self._end_piece_ids = [vocab[wordpiece]
+        #                        for token in (end_tokens or [])
+        #                        for wordpiece in wordpiece_tokenizer(token)]
 
     @overrides
-    def tokens_to_indices(self,tokens: List[Token],
+    def tokens_to_indices(self, tokens: List[Token],
                           vocabulary: Vocabulary,
                           index_name: str) -> Dict[str, List[int]]:
         text = [token.text for token in tokens]
@@ -464,17 +464,17 @@ class PretrainedBertIndexer(TokenizerIndexer):
         byte_encoder = {}
 
         super().__init__(tokenizer=model_tokenizer,
-                         vocab=model_tokenizer.vocab,
+                         #vocab=model_tokenizer.vocab,
                          # bpe_ranks=bpe_ranks,
                          # byte_encoder=byte_encoder,
-                         wordpiece_tokenizer=model_tokenizer.tokenize,
+                         # wordpiece_tokenizer=model_tokenizer.tokenize,
                          namespace="bert",
                          use_starting_offsets=use_starting_offsets,
                          max_pieces=max_pieces,
                          max_pieces_per_token=max_pieces_per_token,
                          #is_test=is_test,
                          do_lowercase=do_lowercase,
-                         never_lowercase=never_lowercase,
-                         start_tokens=["[CLS]"] if not special_tokens_fix else [],
-                         end_tokens=["[SEP]"] if not special_tokens_fix else [],
+                         #never_lowercase=never_lowercase,
+                         #start_tokens=["[CLS]"] if not special_tokens_fix else [],
+                         #end_tokens=["[SEP]"] if not special_tokens_fix else [],
                          truncate_long_sequences=truncate_long_sequences)
