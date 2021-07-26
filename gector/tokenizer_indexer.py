@@ -71,8 +71,8 @@ class TokenizerIndexer(TokenIndexer[int]):
     def __init__(self,
                  tokenizer: Callable[[str], List[str]],
                  vocab: Dict[str, int],
-                 bpe_ranks: Dict,
-                 byte_encoder: Dict,
+                 # bpe_ranks: Dict,
+                 # byte_encoder: Dict,
                  wordpiece_tokenizer: Callable[[str], List[str]],
                  namespace: str = "wordpiece",
                  use_starting_offsets: bool = False,
@@ -106,8 +106,8 @@ class TokenizerIndexer(TokenIndexer[int]):
         self.max_pieces_per_sentence = 80
         #self.is_test = is_test
         self.cache = {}
-        self.bpe_ranks = bpe_ranks
-        self.byte_encoder = byte_encoder
+        # self.bpe_ranks = bpe_ranks
+        # self.byte_encoder = byte_encoder
 
 #         if self.is_test:
 #             self.max_pieces_per_token = None
@@ -465,8 +465,8 @@ class PretrainedBertIndexer(TokenizerIndexer):
 
         super().__init__(tokenizer=model_tokenizer,
                          vocab=model_tokenizer.vocab,
-                         bpe_ranks=bpe_ranks,
-                         byte_encoder=byte_encoder,
+                         # bpe_ranks=bpe_ranks,
+                         # byte_encoder=byte_encoder,
                          wordpiece_tokenizer=model_tokenizer.tokenize,
                          namespace="bert",
                          use_starting_offsets=use_starting_offsets,
