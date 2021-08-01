@@ -291,7 +291,8 @@ if __name__ == '__main__':
                         help='The name of the pretrain weights in pretrain_folder param.',
                         default='')
     parser.add_argument('--transformer_model',
-                        choices=['bert', 'distilbert', 'gpt2', 'roberta', 'transformerxl', 'xlnet', 'albert'],
+                        choices=['bert', 'distilbert', 'gpt2', 'roberta', 'transformerxl', 'xlnet', 'albert',
+                                 'bert-large', 'roberta-large', 'xlnet-large'],
                         help='Name of the transformer model.',
                         default='roberta')
     parser.add_argument('--special_tokens_fix',
