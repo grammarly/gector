@@ -17,34 +17,35 @@ from gector.bert_token_embedder import PretrainedBertEmbedder
 from gector.seq2labels_model import Seq2Labels
 from gector.tokenizer_indexer import PretrainedBertIndexer
 from utils.helpers import PAD, UNK, get_target_sent_by_edits, START_TOKEN
+from utils.helpers import get_weights_name
 
 logging.getLogger("werkzeug").setLevel(logging.ERROR)
 logger = logging.getLogger(__file__)
 
 
-def get_weights_name(transformer_name, lowercase):
-    if transformer_name == 'bert' and lowercase:
-        return 'bert-base-uncased'
-    if transformer_name == 'bert' and not lowercase:
-        return 'bert-base-cased'
-    if transformer_name == 'distilbert':
-        if not lowercase:
-            print('Warning! This model was trained only on uncased sentences.')
-        return 'distilbert-base-uncased'
-    if transformer_name == 'albert':
-        if not lowercase:
-            print('Warning! This model was trained only on uncased sentences.')
-        return 'albert-base-v1'
-    if lowercase:
-        print('Warning! This model was trained only on cased sentences.')
-    if transformer_name == 'roberta':
-        return 'roberta-base'
-    if transformer_name == 'gpt2':
-        return 'gpt2'
-    if transformer_name == 'transformerxl':
-        return 'transfo-xl-wt103'
-    if transformer_name == 'xlnet':
-        return 'xlnet-base-cased'
+# def get_weights_name(transformer_name, lowercase):
+#     if transformer_name == 'bert' and lowercase:
+#         return 'bert-base-uncased'
+#     if transformer_name == 'bert' and not lowercase:
+#         return 'bert-base-cased'
+#     if transformer_name == 'distilbert':
+#         if not lowercase:
+#             print('Warning! This model was trained only on uncased sentences.')
+#         return 'distilbert-base-uncased'
+#     if transformer_name == 'albert':
+#         if not lowercase:
+#             print('Warning! This model was trained only on uncased sentences.')
+#         return 'albert-base-v1'
+#     if lowercase:
+#         print('Warning! This model was trained only on cased sentences.')
+#     if transformer_name == 'roberta':
+#         return 'roberta-base'
+#     if transformer_name == 'gpt2':
+#         return 'gpt2'
+#     if transformer_name == 'transformerxl':
+#         return 'transfo-xl-wt103'
+#     if transformer_name == 'xlnet':
+#         return 'xlnet-base-cased'
 
 
 class GecBERTModel(object):
