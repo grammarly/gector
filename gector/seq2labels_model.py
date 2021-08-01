@@ -39,7 +39,7 @@ class Seq2Labels(Model):
         Label encoding to use when calculating span f1.
         Valid options are "BIO", "BIOUL", "IOB1", "BMES".
         Required if ``calculate_span_f1`` is true.
-    label_namespace : ``str``, optional (default=``labels``)
+    labels_namespace : ``str``, optional (default=``labels``)
         This is needed to compute the SpanBasedF1Measure metric, if desired.
         Unless you did something unusual, the default value should be what you want.
     verbose_metrics : ``bool``, optional (default = False)
@@ -105,7 +105,7 @@ class Seq2Labels(Model):
             sequence.  The dictionary is designed to be passed directly to a ``TextFieldEmbedder``,
             which knows how to combine different word representations into a single vector per
             token in your input.
-        lables : torch.LongTensor, optional (default = None)
+        labels : torch.LongTensor, optional (default = None)
             A torch tensor representing the sequence of integer gold class labels of shape
             ``(batch_size, num_tokens)``.
         d_tags : torch.LongTensor, optional (default = None)
