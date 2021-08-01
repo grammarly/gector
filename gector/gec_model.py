@@ -185,8 +185,8 @@ class GecBERTModel(object):
             pretrained_model=weights_name,
             do_lowercase=self.lowercase_tokens,
             max_pieces_per_token=5,
-            use_starting_offsets=True,
-            truncate_long_sequences=True,
+            # use_starting_offsets=True,
+            # truncate_long_sequences=True,
             special_tokens_fix=special_tokens_fix
         )
         return {'bert': bert_token_indexer}
