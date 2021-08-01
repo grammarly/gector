@@ -29,9 +29,9 @@ def get_token_indexers(model_name, max_pieces_per_token=5, lowercase_tokens=True
         pretrained_model=model_name,
         max_pieces_per_token=max_pieces_per_token,
         do_lowercase=lowercase_tokens,
-        use_starting_offsets=True,
+        #use_starting_offsets=True,
         special_tokens_fix=special_tokens_fix,
-        is_test=is_test
+        #is_test=is_test
     )
     return {'bert': bert_token_indexer}
 
