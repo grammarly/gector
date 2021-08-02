@@ -24,14 +24,12 @@ def fix_seed():
     seed(43)
 
 
-def get_token_indexers(model_name, max_pieces_per_token=5, lowercase_tokens=True, special_tokens_fix=0, is_test=False):
+def get_token_indexers(model_name, max_pieces_per_token=5, lowercase_tokens=True, special_tokens_fix=0):
     bert_token_indexer = PretrainedBertIndexer(
         pretrained_model=model_name,
         max_pieces_per_token=max_pieces_per_token,
         do_lowercase=lowercase_tokens,
-        #use_starting_offsets=True,
-        special_tokens_fix=special_tokens_fix,
-        #is_test=is_test
+        special_tokens_fix=special_tokens_fix
     )
     return {'bert': bert_token_indexer}
 
@@ -59,8 +57,8 @@ def get_data_reader(model_name, max_len, skip_correct=False, skip_complex=0,
     token_indexers = get_token_indexers(model_name,
                                         max_pieces_per_token=max_pieces_per_token,
                                         lowercase_tokens=lowercase_tokens,
-                                        special_tokens_fix=special_tokens_fix,
-                                        is_test=test_mode)
+                                        special_tokens_fix=special_tokens_fix
+                                        )
     reader = Seq2LabelsDatasetReader(token_indexers=token_indexers,
                                      max_len=max_len,
                                      skip_correct=skip_correct,
