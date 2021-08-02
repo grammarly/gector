@@ -23,31 +23,6 @@ logging.getLogger("werkzeug").setLevel(logging.ERROR)
 logger = logging.getLogger(__file__)
 
 
-# def get_weights_name(transformer_name, lowercase):
-#     if transformer_name == 'bert' and lowercase:
-#         return 'bert-base-uncased'
-#     if transformer_name == 'bert' and not lowercase:
-#         return 'bert-base-cased'
-#     if transformer_name == 'distilbert':
-#         if not lowercase:
-#             print('Warning! This model was trained only on uncased sentences.')
-#         return 'distilbert-base-uncased'
-#     if transformer_name == 'albert':
-#         if not lowercase:
-#             print('Warning! This model was trained only on uncased sentences.')
-#         return 'albert-base-v1'
-#     if lowercase:
-#         print('Warning! This model was trained only on cased sentences.')
-#     if transformer_name == 'roberta':
-#         return 'roberta-base'
-#     if transformer_name == 'gpt2':
-#         return 'gpt2'
-#     if transformer_name == 'transformerxl':
-#         return 'transfo-xl-wt103'
-#     if transformer_name == 'xlnet':
-#         return 'xlnet-base-cased'
-
-
 class GecBERTModel(object):
     def __init__(self, vocab_path=None, model_paths=None,
                  weigths=None,

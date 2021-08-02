@@ -31,26 +31,10 @@ class TokenizerIndexer(TokenIndexer[int]):
     ----------
     tokenizer : ``Callable[[str], List[str]]``
         A function that does the actual tokenization.
-    namespace : str, optional (default: "wordpiece")
-        The namespace in the AllenNLP ``Vocabulary`` into which the wordpieces
-        will be loaded.
-    use_starting_offsets : bool, optional (default: False)
-        By default, the "offsets" created by the token indexer correspond to the
-        last wordpiece in each word. If ``use_starting_offsets`` is specified,
-        they will instead correspond to the first wordpiece in each word.
     max_pieces : int, optional (default: 512)
         The BERT embedder uses positional embeddings and so has a corresponding
         maximum length for its input ids. Any inputs longer than this will
         either be truncated (default), or be split apart and batched using a
-        sliding window.
-    do_lowercase : ``bool``, optional (default=``False``)
-        Should we lowercase the provided tokens before getting the indices?
-        You would need to do this if you are using an -uncased BERT model
-        but your DatasetReader is not lowercasing tokens (which might be the
-        case if you're also using other embeddings based on cased tokens).
-    truncate_long_sequences : ``bool``, optional (default=``True``)
-        By default, long sequences will be truncated to the maximum sequence
-        length. Otherwise, they will be split apart and batched using a
         sliding window.
     token_min_padding_length : ``int``, optional (default=``0``)
         See :class:`TokenIndexer`.
@@ -58,12 +42,8 @@ class TokenizerIndexer(TokenIndexer[int]):
 
     def __init__(self,
                  tokenizer: Callable[[str], List[str]],
-                 # namespace: str = "wordpiece",
-                 # use_starting_offsets: bool = False,
                  max_pieces: int = 512,
                  max_pieces_per_token: int = 3,
-                 # do_lowercase: bool = False,
-                 # truncate_long_sequences: bool = True,
                  token_min_padding_length: int = 0) -> None:
         super().__init__(token_min_padding_length)
 
@@ -74,14 +54,8 @@ class TokenizerIndexer(TokenIndexer[int]):
 
         self.tokenizer = tokenizer
         self.max_pieces_per_token = max_pieces_per_token
-        # self._namespace = namespace
-        # self._added_to_vocabulary = False
         self.max_pieces = max_pieces
-        # self.use_starting_offsets = use_starting_offsets
-        # self._do_lowercase = do_lowercase
-        # self._truncate_long_sequences = truncate_long_sequences
         self.max_pieces_per_sentence = 80
-        # self.cache = {}
 
     @overrides
     def tokens_to_indices(self, tokens: List[Token],
@@ -137,39 +111,23 @@ class PretrainedBertIndexer(TokenizerIndexer):
     pretrained_model: ``str``
         Either the name of the pretrained model to use (e.g. 'bert-base-uncased'),
         or the path to the .txt file with its vocabulary.
-
         If the name is a key in the list of pretrained models at
         https://github.com/huggingface/pytorch-pretrained-BERT/blob/master/pytorch_pretrained_bert/tokenization.py#L33
         the corresponding path will be used; otherwise it will be interpreted as a path or URL.
-    use_starting_offsets: bool, optional (default: False)
-        By default, the "offsets" created by the token indexer correspond to the
-        last wordpiece in each word. If ``use_starting_offsets`` is specified,
-        they will instead correspond to the first wordpiece in each word.
     do_lowercase: ``bool``, optional (default = True)
         Whether to lowercase the tokens before converting to wordpiece ids.
-    never_lowercase: ``List[str]``, optional
-        Tokens that should never be lowercased. Default is
-        ['[UNK]', '[SEP]', '[PAD]', '[CLS]', '[MASK]'].
     max_pieces: int, optional (default: 512)
         The BERT embedder uses positional embeddings and so has a corresponding
         maximum length for its input ids. Any inputs longer than this will
         either be truncated (default), or be split apart and batched using a
         sliding window.
-    truncate_long_sequences : ``bool``, optional (default=``True``)
-        By default, long sequences will be truncated to the maximum sequence
-        length. Otherwise, they will be split apart and batched using a
-        sliding window.
     """
 
     def __init__(self,
                  pretrained_model: str,
-                 # use_starting_offsets: bool = False,
                  do_lowercase: bool = True,
-                 # never_lowercase: List[str] = None,
                  max_pieces: int = 512,
-                 max_pieces_per_token=5,
-                 # is_test=False,
-                 # truncate_long_sequences: bool = True,
+                 max_pieces_per_token: int = 5,
                  special_tokens_fix: int = 0) -> None:
 
         if pretrained_model.endswith("-cased") and do_lowercase:
@@ -197,11 +155,7 @@ class PretrainedBertIndexer(TokenizerIndexer):
             model_tokenizer.vocab[START_TOKEN] = len(model_tokenizer) - 1
 
         super().__init__(tokenizer=model_tokenizer,
-                         # namespace="bert",
-                         # use_starting_offsets=use_starting_offsets,
                          max_pieces=max_pieces,
-                         max_pieces_per_token=max_pieces_per_token,
-                         # do_lowercase=do_lowercase,
-                         # truncate_long_sequences=truncate_long_sequences
+                         max_pieces_per_token=max_pieces_per_token
                         )
 

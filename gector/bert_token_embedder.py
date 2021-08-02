@@ -70,7 +70,6 @@ class BertEmbedder(TokenEmbedder):
         num_end_tokens: int = 1
     ) -> None:
         super().__init__()
-        # self.bert_model = bert_model
         self.bert_model = deepcopy(bert_model)
         self.output_dim = bert_model.config.hidden_size
         self.max_pieces = max_pieces
