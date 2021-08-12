@@ -1,4 +1,8 @@
+import os
 from time import time
+
+
+os.environ['TOKENIZERS_PARALLELISM'] = 'false'
 
 
 def get_bpe_groups(token_offsets, bpe_offsets, input_ids, max_bpe_pieces=5):
@@ -48,13 +52,14 @@ def reduce_input_ids(input_ids, bpe_groups, saved_ids,
                 saved_ids = [i for i in saved_ids if i not in redundant_ids]
 
     # get offsets
+    reduced_ids = [input_ids[i] for i in saved_ids]
     correct_offsets = []
     idx = 0
     for i, bpe_group in enumerate(bpe_groups):
-        correct_offsets.append(idx)
+        norm_idx = min(idx, len(reduced_ids) - 1)
+        correct_offsets.append(norm_idx)
         idx += len(bpe_group)
 
-    reduced_ids = [input_ids[i] for i in saved_ids]
     return reduced_ids, correct_offsets
 
 

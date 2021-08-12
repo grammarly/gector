@@ -150,14 +150,20 @@ def main(args):
     iterator = BucketIterator(batch_size=args.batch_size,
                               sorting_keys=[("tokens", "num_tokens")],
                               biggest_batch_first=True,
-                              max_instances_in_memory=args.batch_size * 20000,
+                              max_instances_in_memory=instances_per_epoch,
                               instances_per_epoch=instances_per_epoch,
                               )
     iterator.index_with(vocab)
+    val_iterator = BucketIterator(batch_size=args.batch_size,
+                                  sorting_keys=[("tokens", "num_tokens")], 
+                                  instances_per_epoch=None)
+    val_iterator.index_with(vocab)
+
     trainer = Trainer(model=model,
                       optimizer=optimizer,
                       scheduler=scheduler,
                       iterator=iterator,
+                      validation_iterator=val_iterator,
                       train_dataset=train_data,
                       validation_dataset=dev_data,
                       serialization_dir=args.model_dir,
