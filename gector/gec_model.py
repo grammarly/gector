@@ -243,15 +243,14 @@ class GecBERTModel(object):
         return final_batch, new_pred_ids, total_updated
 
     def postprocess_batch(self, batch, all_probabilities, all_idxs,
-                          error_probs,
-                          max_len=50):
+                          error_probs):
         all_results = []
         noop_index = self.vocab.get_token_index("$KEEP", "labels")
         for tokens, probabilities, idxs, error_prob in zip(batch,
                                                            all_probabilities,
                                                            all_idxs,
                                                            error_probs):
-            length = min(len(tokens), max_len)
+            length = min(len(tokens), self.max_len)
             edits = []
 
             # skip whole sentences if there no errors
