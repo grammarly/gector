@@ -100,7 +100,7 @@ def apply_merge_transformation(source_tokens, target_words, shift_idx):
 
 def is_sent_ok(sent, delimeters=SEQ_DELIMETERS):
     for del_val in delimeters.values():
-        if del_val in sent and del_val != " ":
+        if del_val in sent and del_val != delimeters["tokens"]:
             return False
     return True
 
