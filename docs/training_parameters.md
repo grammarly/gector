@@ -34,7 +34,6 @@ right time. For reproducibility reasons, we are providing further
   skip_correct: 1  
   skip_complex: 0   
   max_len: 50  
-  min_len: 3  
   batch_size: 64  
   tag_strategy: keep_one  
   cold_steps_count: 0  
@@ -49,6 +48,12 @@ right time. For reproducibility reasons, we are providing further
 ```
 
 ### Model specific parameters
+
+#### BERT:
+```
+  transformer_model: bert  
+  special_tokens_fix: 0  
+```
 
 #### XLNet:
 ```
@@ -81,6 +86,7 @@ right time. For reproducibility reasons, we are providing further
   updates_per_epoch: 0  
   tn_prob: 0  
   tp_prob: 1  
+  pretrain_folder: FOLDER_OF_BEST_MODEL_FROM_STAGE1
   pretrain: BEST_MODEL_FROM_STAGE1  
 ```
 
@@ -101,6 +107,7 @@ right time. For reproducibility reasons, we are providing further
   updates_per_epoch: 0  
   tn_prob: 1  
   tp_prob: 1  
+  pretrain_folder: FOLDER_OF_BEST_MODEL_FROM_STAGE2
   pretrain: BEST_MODEL_FROM_STAGE2  
 ```
 
