@@ -67,6 +67,8 @@ python utils/preprocess_data.py -s SOURCE -t TARGET -o OUTPUT_FILE
   </tr>
 </table>
 
+**Note**: The scores in the table are different from the paper's ones, as the later version of transformers is used. To reproduce the results reported in the paper, use [this version](https://github.com/grammarly/gector/tree/fea1532608) of the repository. 
+
 ## Train model
 To train the model, simply run:
 ```.bash
