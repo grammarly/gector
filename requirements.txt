@@ -1,7 +1,7 @@
-torch==1.7.1
+torch==1.10.0
 allennlp==0.8.4
 python-Levenshtein==0.12.1
-transformers==4.2.2
+transformers==4.11.3
 scikit-learn==0.20.0
 sentencepiece==0.1.95
 overrides==4.1.2
