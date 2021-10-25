@@ -9,6 +9,12 @@ START_TOKEN = "$START"
 SEQ_DELIMETERS = {"tokens": " ",
                   "labels": "SEPL|||SEPR",
                   "operations": "SEPL__SEPR"}
+REPLACEMENTS = {
+    "''": '"',
+    '--': '—',
+    '`': "'",
+    "'ve": "' ve",
+}
 
 
 def get_verb_form_dicts():
@@ -207,3 +213,21 @@ def get_weights_name(transformer_name, lowercase):
         return 'xlnet-base-cased'
     if transformer_name == 'xlnet-large':
         return 'xlnet-large-cased'
+
+
+def remove_double_tokens(sent):
+    tokens = sent.split(' ')
+    deleted_idx = []
+    for i in range(len(tokens) -1):
+        if tokens[i] == tokens[i + 1]:
+            deleted_idx.append(i + 1)
+    if deleted_idx:
+        tokens = [tokens[i] for i in range(len(tokens)) if i not in deleted_idx]
+    return ' '.join(tokens)
+
+
+def normalize(sent):
+    sent = remove_double_tokens(sent)
+    for fr, to in REPLACEMENTS.items():
+        sent = sent.replace(fr, to)
+    return sent.lower()
