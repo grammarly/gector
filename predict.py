@@ -38,6 +38,7 @@ def main(args):
                          special_tokens_fix=args.special_tokens_fix,
                          log=False,
                          confidence=args.additional_confidence,
+                         del_confidence=args.additional_del_confidence,
                          is_ensemble=args.is_ensemble,
                          weigths=args.weights)
 
@@ -93,6 +94,10 @@ if __name__ == '__main__':
     parser.add_argument('--additional_confidence',
                         type=float,
                         help='How many probability to add to $KEEP token.',
+                        default=0)
+    parser.add_argument('--additional_del_confidence',
+                        type=float,
+                        help='How many probability to add to $DELETE token.',
                         default=0)
     parser.add_argument('--min_error_probability',
                         type=float,

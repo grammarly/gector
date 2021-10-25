@@ -59,6 +59,7 @@ class Seq2Labels(Model):
                  verbose_metrics: bool = False,
                  label_smoothing: float = 0.0,
                  confidence: float = 0.0,
+                 del_confidence: float = 0.0,
                  initializer: InitializerApplicator = InitializerApplicator(),
                  regularizer: Optional[RegularizerApplicator] = None) -> None:
         super(Seq2Labels, self).__init__(vocab, regularizer)
@@ -70,6 +71,7 @@ class Seq2Labels(Model):
         self.num_detect_classes = self.vocab.get_vocab_size(detect_namespace)
         self.label_smoothing = label_smoothing
         self.confidence = confidence
+        self.del_conf = del_confidence
         self.incorr_index = self.vocab.get_token_index("INCORRECT",
                                                        namespace=detect_namespace)
 
@@ -140,10 +142,9 @@ class Seq2Labels(Model):
         error_probs = class_probabilities_d[:, :, self.incorr_index] * mask
         incorr_prob = torch.max(error_probs, dim=-1)[0]
 
-        if self.confidence > 0:
-            probability_change = [self.confidence] + [0] * (self.num_labels_classes - 1)
-            class_probabilities_labels += torch.FloatTensor(probability_change).repeat(
-                (batch_size, sequence_length, 1)).to(class_probabilities_labels.device)
+        probability_change = [self.confidence, self.del_conf] + [0] * (self.num_labels_classes - 2)
+        class_probabilities_labels += torch.FloatTensor(probability_change).repeat(
+            (batch_size, sequence_length, 1)).to(class_probabilities_labels.device)
 
         output_dict = {"logits_labels": logits_labels,
                        "logits_d_tags": logits_d,

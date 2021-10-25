@@ -36,6 +36,7 @@ class GecBERTModel(object):
                  is_ensemble=True,
                  min_error_probability=0.0,
                  confidence=0,
+                 del_confidence=0,
                  resolve_cycles=False,
                  ):
         self.model_weights = list(map(float, weigths)) if weigths else [1] * len(model_paths)
@@ -48,6 +49,7 @@ class GecBERTModel(object):
         self.log = log
         self.iterations = iterations
         self.confidence = confidence
+        self.del_conf = del_confidence
         self.resolve_cycles = resolve_cycles
         # set training parameters and operations
 
@@ -60,7 +62,8 @@ class GecBERTModel(object):
             self.indexers.append(self._get_indexer(weights_name, special_tokens_fix))
             model = Seq2Labels(vocab=self.vocab,
                                text_field_embedder=self._get_embbeder(weights_name, special_tokens_fix),
-                               confidence=self.confidence
+                               confidence=self.confidence,
+                               del_confidence=self.del_conf,
                                ).to(self.device)
             if torch.cuda.is_available():
                 model.load_state_dict(torch.load(model_path), strict=False)
