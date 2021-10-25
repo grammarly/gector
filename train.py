@@ -136,7 +136,10 @@ def main(args):
         cuda_device = -1
 
     if args.pretrain:
-        model.load_state_dict(torch.load(os.path.join(args.pretrain_folder, args.pretrain + '.th')))
+        model.load_state_dict(
+            torch.load(os.path.join(args.pretrain_folder, args.pretrain + '.th')),
+            strict=False,
+        )
 
     model = model.to(device)
 
