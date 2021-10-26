@@ -12,7 +12,7 @@ from gector.bert_token_embedder import PretrainedBertEmbedder
 from gector.datareader import Seq2LabelsDatasetReader
 from gector.seq2labels_model import Seq2Labels
 from gector.trainer import Trainer
-from gector.wordpiece_indexer import PretrainedBertIndexer
+from gector.tokenizer_indexer import PretrainedBertIndexer
 from utils.helpers import get_weights_name
 
 
@@ -24,14 +24,12 @@ def fix_seed():
     seed(43)
 
 
-def get_token_indexers(model_name, max_pieces_per_token=5, lowercase_tokens=True, special_tokens_fix=0, is_test=False):
+def get_token_indexers(model_name, max_pieces_per_token=5, lowercase_tokens=True, special_tokens_fix=0):
     bert_token_indexer = PretrainedBertIndexer(
         pretrained_model=model_name,
         max_pieces_per_token=max_pieces_per_token,
         do_lowercase=lowercase_tokens,
-        use_starting_offsets=True,
-        special_tokens_fix=special_tokens_fix,
-        is_test=is_test
+        special_tokens_fix=special_tokens_fix
     )
     return {'bert': bert_token_indexer}
 
@@ -59,8 +57,8 @@ def get_data_reader(model_name, max_len, skip_correct=False, skip_complex=0,
     token_indexers = get_token_indexers(model_name,
                                         max_pieces_per_token=max_pieces_per_token,
                                         lowercase_tokens=lowercase_tokens,
-                                        special_tokens_fix=special_tokens_fix,
-                                        is_test=test_mode)
+                                        special_tokens_fix=special_tokens_fix
+                                        )
     reader = Seq2LabelsDatasetReader(token_indexers=token_indexers,
                                      max_len=max_len,
                                      skip_correct=skip_correct,
@@ -138,7 +136,10 @@ def main(args):
         cuda_device = -1
 
     if args.pretrain:
-        model.load_state_dict(torch.load(os.path.join(args.pretrain_folder, args.pretrain + '.th')))
+        model.load_state_dict(
+            torch.load(os.path.join(args.pretrain_folder, args.pretrain + '.th')),
+            strict=False,
+        )
 
     model = model.to(device)
 
@@ -152,14 +153,20 @@ def main(args):
     iterator = BucketIterator(batch_size=args.batch_size,
                               sorting_keys=[("tokens", "num_tokens")],
                               biggest_batch_first=True,
-                              max_instances_in_memory=args.batch_size * 20000,
+                              max_instances_in_memory=instances_per_epoch,
                               instances_per_epoch=instances_per_epoch,
                               )
     iterator.index_with(vocab)
+    val_iterator = BucketIterator(batch_size=args.batch_size,
+                                  sorting_keys=[("tokens", "num_tokens")], 
+                                  instances_per_epoch=None)
+    val_iterator.index_with(vocab)
+
     trainer = Trainer(model=model,
                       optimizer=optimizer,
                       scheduler=scheduler,
                       iterator=iterator,
+                      validation_iterator=val_iterator,
                       train_dataset=train_data,
                       validation_dataset=dev_data,
                       serialization_dir=args.model_dir,
@@ -291,7 +298,8 @@ if __name__ == '__main__':
                         help='The name of the pretrain weights in pretrain_folder param.',
                         default='')
     parser.add_argument('--transformer_model',
-                        choices=['bert', 'distilbert', 'gpt2', 'roberta', 'transformerxl', 'xlnet', 'albert'],
+                        choices=['bert', 'distilbert', 'gpt2', 'roberta', 'transformerxl', 'xlnet', 'albert',
+                                 'bert-large', 'roberta-large', 'xlnet-large'],
                         help='Name of the transformer model.',
                         default='roberta')
     parser.add_argument('--special_tokens_fix',

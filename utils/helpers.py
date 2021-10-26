@@ -9,6 +9,12 @@ START_TOKEN = "$START"
 SEQ_DELIMETERS = {"tokens": " ",
                   "labels": "SEPL|||SEPR",
                   "operations": "SEPL__SEPR"}
+REPLACEMENTS = {
+    "''": '"',
+    '--': '—',
+    '`': "'",
+    "'ve": "' ve",
+}
 
 
 def get_verb_form_dicts():
@@ -183,6 +189,8 @@ def get_weights_name(transformer_name, lowercase):
         return 'bert-base-uncased'
     if transformer_name == 'bert' and not lowercase:
         return 'bert-base-cased'
+    if transformer_name == 'bert-large' and not lowercase:
+        return 'bert-large-cased'
     if transformer_name == 'distilbert':
         if not lowercase:
             print('Warning! This model was trained only on uncased sentences.')
@@ -195,9 +203,31 @@ def get_weights_name(transformer_name, lowercase):
         print('Warning! This model was trained only on cased sentences.')
     if transformer_name == 'roberta':
         return 'roberta-base'
+    if transformer_name == 'roberta-large':
+        return 'roberta-large'
     if transformer_name == 'gpt2':
         return 'gpt2'
     if transformer_name == 'transformerxl':
         return 'transfo-xl-wt103'
     if transformer_name == 'xlnet':
         return 'xlnet-base-cased'
+    if transformer_name == 'xlnet-large':
+        return 'xlnet-large-cased'
+
+
+def remove_double_tokens(sent):
+    tokens = sent.split(' ')
+    deleted_idx = []
+    for i in range(len(tokens) -1):
+        if tokens[i] == tokens[i + 1]:
+            deleted_idx.append(i + 1)
+    if deleted_idx:
+        tokens = [tokens[i] for i in range(len(tokens)) if i not in deleted_idx]
+    return ' '.join(tokens)
+
+
+def normalize(sent):
+    sent = remove_double_tokens(sent)
+    for fr, to in REPLACEMENTS.items():
+        sent = sent.replace(fr, to)
+    return sent.lower()

@@ -15,36 +15,12 @@ from allennlp.nn import util
 
 from gector.bert_token_embedder import PretrainedBertEmbedder
 from gector.seq2labels_model import Seq2Labels
-from gector.wordpiece_indexer import PretrainedBertIndexer
+from gector.tokenizer_indexer import PretrainedBertIndexer
 from utils.helpers import PAD, UNK, get_target_sent_by_edits, START_TOKEN
+from utils.helpers import get_weights_name
 
 logging.getLogger("werkzeug").setLevel(logging.ERROR)
 logger = logging.getLogger(__file__)
-
-
-def get_weights_name(transformer_name, lowercase):
-    if transformer_name == 'bert' and lowercase:
-        return 'bert-base-uncased'
-    if transformer_name == 'bert' and not lowercase:
-        return 'bert-base-cased'
-    if transformer_name == 'distilbert':
-        if not lowercase:
-            print('Warning! This model was trained only on uncased sentences.')
-        return 'distilbert-base-uncased'
-    if transformer_name == 'albert':
-        if not lowercase:
-            print('Warning! This model was trained only on uncased sentences.')
-        return 'albert-base-v1'
-    if lowercase:
-        print('Warning! This model was trained only on cased sentences.')
-    if transformer_name == 'roberta':
-        return 'roberta-base'
-    if transformer_name == 'gpt2':
-        return 'gpt2'
-    if transformer_name == 'transformerxl':
-        return 'transfo-xl-wt103'
-    if transformer_name == 'xlnet':
-        return 'xlnet-base-cased'
 
 
 class GecBERTModel(object):
@@ -60,6 +36,7 @@ class GecBERTModel(object):
                  is_ensemble=True,
                  min_error_probability=0.0,
                  confidence=0,
+                 del_confidence=0,
                  resolve_cycles=False,
                  ):
         self.model_weights = list(map(float, weigths)) if weigths else [1] * len(model_paths)
@@ -72,6 +49,7 @@ class GecBERTModel(object):
         self.log = log
         self.iterations = iterations
         self.confidence = confidence
+        self.del_conf = del_confidence
         self.resolve_cycles = resolve_cycles
         # set training parameters and operations
 
@@ -84,13 +62,15 @@ class GecBERTModel(object):
             self.indexers.append(self._get_indexer(weights_name, special_tokens_fix))
             model = Seq2Labels(vocab=self.vocab,
                                text_field_embedder=self._get_embbeder(weights_name, special_tokens_fix),
-                               confidence=self.confidence
+                               confidence=self.confidence,
+                               del_confidence=self.del_conf,
                                ).to(self.device)
             if torch.cuda.is_available():
-                model.load_state_dict(torch.load(model_path))
+                model.load_state_dict(torch.load(model_path), strict=False)
             else:
                 model.load_state_dict(torch.load(model_path,
-                                                 map_location=torch.device('cpu')))
+                                                 map_location=torch.device('cpu')),
+                                                 strict=False)
             model.eval()
             self.models.append(model)
 
@@ -184,10 +164,7 @@ class GecBERTModel(object):
             pretrained_model=weights_name,
             do_lowercase=self.lowercase_tokens,
             max_pieces_per_token=5,
-            use_starting_offsets=True,
-            truncate_long_sequences=True,
-            special_tokens_fix=special_tokens_fix,
-            is_test=True
+            special_tokens_fix=special_tokens_fix
         )
         return {'bert': bert_token_indexer}
 

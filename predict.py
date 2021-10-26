@@ -1,10 +1,10 @@
 import argparse
 
-from utils.helpers import read_lines
+from utils.helpers import read_lines, normalize
 from gector.gec_model import GecBERTModel
 
 
-def predict_for_file(input_file, output_file, model, batch_size=32):
+def predict_for_file(input_file, output_file, model, batch_size=32, to_normalize=False):
     test_data = read_lines(input_file)
     predictions = []
     cnt_corrections = 0
@@ -21,8 +21,12 @@ def predict_for_file(input_file, output_file, model, batch_size=32):
         predictions.extend(preds)
         cnt_corrections += cnt
 
+    result_lines = [" ".join(x) for x in predictions]
+    if to_normalize:
+        result_lines = [normalize(line) for line in result_lines]
+
     with open(output_file, 'w') as f:
-        f.write("\n".join([" ".join(x) for x in predictions]) + '\n')
+        f.write("\n".join(result_lines) + '\n')
     return cnt_corrections
 
 
@@ -38,11 +42,13 @@ def main(args):
                          special_tokens_fix=args.special_tokens_fix,
                          log=False,
                          confidence=args.additional_confidence,
+                         del_confidence=args.additional_del_confidence,
                          is_ensemble=args.is_ensemble,
                          weigths=args.weights)
 
     cnt_corrections = predict_for_file(args.input_file, args.output_file, model,
-                                       batch_size=args.batch_size)
+                                       batch_size=args.batch_size, 
+                                       to_normalize=args.normalize)
     # evaluate with m2 or ERRANT
     print(f"Produced overall corrections: {cnt_corrections}")
 
@@ -82,7 +88,8 @@ if __name__ == '__main__':
                         help='Whether to lowercase tokens.',
                         default=0)
     parser.add_argument('--transformer_model',
-                        choices=['bert', 'gpt2', 'transformerxl', 'xlnet', 'distilbert', 'roberta', 'albert'],
+                        choices=['bert', 'gpt2', 'transformerxl', 'xlnet', 'distilbert', 'roberta', 'albert'
+                                 'bert-large', 'roberta-large', 'xlnet-large'],
                         help='Name of the transformer model.',
                         default='roberta')
     parser.add_argument('--iteration_count',
@@ -92,6 +99,10 @@ if __name__ == '__main__':
     parser.add_argument('--additional_confidence',
                         type=float,
                         help='How many probability to add to $KEEP token.',
+                        default=0)
+    parser.add_argument('--additional_del_confidence',
+                        type=float,
+                        help='How many probability to add to $DELETE token.',
                         default=0)
     parser.add_argument('--min_error_probability',
                         type=float,
@@ -110,5 +121,8 @@ if __name__ == '__main__':
     parser.add_argument('--weights',
                         help='Used to calculate weighted average', nargs='+',
                         default=None)
+    parser.add_argument('--normalize',
+                        help='Use for text simplification.',
+                        action='store_true')
     args = parser.parse_args()
     main(args)
