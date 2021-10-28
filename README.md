@@ -133,6 +133,11 @@ For evaluation use [EASSE](https://github.com/feralvam/easse) package.
 - in the paper, we reported average scores of 4 models trained with different seeds;
 - we merged codebases for GEC and Text Simplification tasks and updated them to the newer version of transformers lib.
 
+## Noticeable works based on GECToR
+
+- Improving Sequence Tagging approach for Grammatical Error Correction task [[paper](https://s3.eu-central-1.amazonaws.com/ucu.edu.ua/wp-content/uploads/sites/8/2021/04/Improving-Sequence-Tagging-Approach-for-Grammatical-Error-Correction-Task-.pdf)][[code](https://github.com/MaksTarnavskyi/gector-large)]
+- LM-Critic: Language Models for Unsupervised Grammatical Error Correction [[paper](https://arxiv.org/pdf/2109.06822.pdf)]
+
 ## Citation
 If you find this work is useful for your research, please cite our papers:
 
