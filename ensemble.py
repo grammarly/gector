@@ -3,6 +3,7 @@ import os
 import spacy
 from difflib import SequenceMatcher
 from collections import Counter
+from tqdm.auto import tqdm
 
 import numpy as np
 
@@ -108,7 +109,7 @@ def main(args):
 
     pred_texts = np.array(pred_texts)
     sent_after_merge = []
-    for i in range(len(source_sentences)):
+    for i in tqdm(range(len(source_sentences))):
         source_sentence = source_sentences[i]
         target_sentences = pred_texts[:, i]
         new_sentence = make_changes(nlp, source_sentence, target_sentences=target_sentences, min_count=args.min_count, debug=False)
