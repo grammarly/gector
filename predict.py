@@ -6,23 +6,13 @@ from utils.helpers import read_lines
 from gector.gec_model import GecBERTModel
 import torch
 
-# import spacy
-# nlp = spacy.load("en_core_web_sm")
+
 from difflib import SequenceMatcher
 
 def generate_text_for_log(processed_lines, total_lines, corrected_lines, prediction_duration, cnt_corrections):
     return "Processed lines: "+str(processed_lines)+"/"+str(total_lines)+" = "+ str(round(100*processed_lines/total_lines, 2))+"%\n"+ "Corrected lines: "+ str(corrected_lines)+"/"+str(processed_lines)+" = "+ str(round(100*corrected_lines/processed_lines, 2))+"%\n"+ "Prediction duration: "+ str(prediction_duration)+"\n"+ "Total corrections: "+str(cnt_corrections)
 
-# def check_corrected_line_2(source, target):
-#     source_tokens = [token.text for token in list(nlp(source))]
-#     target_tokens = [token.text for token in list(nlp(target))]
-#     matcher = SequenceMatcher(None, source_tokens, target_tokens)
-#     raw_diffs = list(matcher.get_opcodes())
-#     if len(raw_diffs) == 1:
-#         if raw_diffs[0][0] == 'equal':
-#             return 0
-#     return 1
-   
+
 def check_corrected_line(source_tokens, target_tokens):
     matcher = SequenceMatcher(None, source_tokens, target_tokens)
     raw_diffs = list(matcher.get_opcodes())
