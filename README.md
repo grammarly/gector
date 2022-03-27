@@ -27,7 +27,7 @@ All available pretrained models can be downloaded [here](https://drive.google.co
     <th>Min error prob</th>
     <th>BEA-2019 (test)</th>
   </tr>
-  
+
   <tr>
     <th>RoBERTa <a href="https://drive.google.com/drive/folders/1Si2hwmskb7QxqSFtPBsivl_FujkR3p6l?usp=sharing">[link]</a></th>
     <th>0.1</th>
@@ -90,4 +90,20 @@ python ensemble.py --source_file SOURCE_FILE \
 ## Evaluation
 For evaluation we use [ERRANT](https://github.com/chrisjbryant/errant).
 
+## Citation
+If you find this work is useful for your research, please cite our paper:
 
+**Ensembling and Knowledge Distilling of Large Sequence Taggers for Grammatical Error Correction**
+
+```
+@inproceedings{tarnavskyi-etal-2022-improved-gector,
+    title = "Ensembling and Knowledge Distilling of Large Sequence Taggers for Grammatical Error Correction",
+    author = "Tarnavskyi, Maksym and Chernodub, Artem and Omelianchuk, Kostiantyn",
+    booktitle = "Accepted for publication at 60th Annual Meeting of the Association for Computational Linguistics (ACL 2022)",
+    month = May,
+    year = "2022",
+    address = "Dublin, Ireland",
+    url = "https://arxiv.org/pdf/2203.13064.pdf",
+    abstract = "In this paper, we investigate improvements to the GEC sequence tagging architecture with a focus on ensembling of recent cutting-edge Transformer-based encoders in Large configurations. We encourage ensembling models by majority votes on span-level edits because this approach is tolerant to the model architecture and vocabulary size. Our best ensemble achieves a new SOTA result with an F0.5 score of 76.05 on BEA-2019 (test), even without pretraining on synthetic datasets. In addition, we perform knowledge distillation with a trained ensemble to generate new synthetic training datasets, "Troy-Blogs" and "Troy-1BW". Our best single sequence tagging model that is pretrained on the generated Troy- datasets in combination with the publicly available synthetic PIE dataset achieves a near-SOTA result with an F0.5 score of 73.21 on BEA-2019 (test). The code, datasets, and trained models are publicly available.",
+}
+```
