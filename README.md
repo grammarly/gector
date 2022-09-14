@@ -12,7 +12,7 @@ The following command installs all necessary packages:
 ```.bash
 conda create --name <Environment_name> python=3.8
 conda activate <Environment_name> 
-python setup.py install
+python install -e .
 ```
 The project was tested using Python 3.8.
 

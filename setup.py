@@ -9,7 +9,6 @@ def requirements():
 
 
 setup(
-    # Needed to silence warnings (and to be a worthwhile package)
     name='gector',
     url='https://github.com/grammarly/gector',
     author='grammarly',
