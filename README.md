@@ -10,9 +10,11 @@ It is mainly based on `AllenNLP` and `transformers`.
 ## Installation
 The following command installs all necessary packages:
 ```.bash
-pip install -r requirements.txt
+conda create --name <Environment_name> python=3.8
+conda activate <Environment_name> 
+python setup.py install
 ```
-The project was tested using Python 3.7.
+The project was tested using Python 3.8.
 
 ## Datasets
 All the public GEC datasets used in the paper can be downloaded from [here](https://www.cl.cam.ac.uk/research/nl/bea2019st/#data).<br>
