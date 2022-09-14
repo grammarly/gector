@@ -9,10 +9,10 @@ This repository provides code for training and testing state-of-the-art models f
 It is mainly based on `AllenNLP` and `transformers`.
 ## Installation
 The following command installs all necessary packages:
-```.bash
+```bash
 conda create --name <Environment_name> python=3.8
 conda activate <Environment_name> 
-python install -e .
+pip install -e .
 ```
 The project was tested using Python 3.8.
 
