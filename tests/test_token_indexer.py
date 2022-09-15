@@ -25,7 +25,7 @@ class TestPretrainedTransformerIndexer(unittest.TestCase):
     """
 
     def setUp(self):
-        """Iniital setup."""
+        """Initial setup."""
         tokenizer = WordTokenizer(word_splitter=BertBasicWordSplitter())
         sentence = "the Quick brown fox jumped over the laziest lazy elmo"
         vocab_path = "../data/output_vocabulary"
@@ -39,9 +39,10 @@ class TestPretrainedTransformerIndexer(unittest.TestCase):
                                               do_lowercase=True, max_pieces=512,
                                               special_tokens_fix=1)
         indexed_tokens = token_indexer.tokens_to_indices(self.tokens, self.vocab, self.model_name)
-        assert indexed_tokens['bert'] == [627, 2119, 6219, 23602, 4262, 81, 5, 40154, 7098, 22414, 1615, 4992]
-        assert indexed_tokens['bert-offsets'] == [0, 1, 2, 3, 4, 5, 6, 7, 9, 10]
-        assert indexed_tokens['mask'] == [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        self.assertEqual(indexed_tokens['bert'], [627, 2119, 6219, 23602, 4262, 81, 5, 40154,
+                             7098, 22414, 1615, 4992])
+        self.assertEqual(indexed_tokens['bert-offsets'], [0, 1, 2, 3, 4, 5, 6, 7, 9, 10])
+        self.assertEqual(indexed_tokens['mask'], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
 
     def test_toggle_special_tokens_fix(self):
         """Test togging special_tokens_fix to be False"""
@@ -50,9 +51,10 @@ class TestPretrainedTransformerIndexer(unittest.TestCase):
                                               special_tokens_fix=0)
         indexed_tokens = token_indexer.tokens_to_indices(self.tokens, self.vocab, self.model_name)
 
-        assert indexed_tokens['bert'] == [627, 2119, 6219, 23602, 4262, 81, 5, 40154, 7098, 22414, 1615, 4992]
-        assert indexed_tokens['bert-offsets'] == [0, 1, 2, 3, 4, 5, 6, 7, 9, 10]
-        assert indexed_tokens['mask'] == [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        self.assertEqual(indexed_tokens['bert'], [627, 2119, 6219, 23602, 4262, 81, 5, 40154,
+                             7098, 22414, 1615, 4992])
+        self.assertEqual(indexed_tokens['bert-offsets'], [0, 1, 2, 3, 4, 5, 6, 7, 9, 10])
+        self.assertEqual(indexed_tokens['mask'], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
 
     def test_truncate_window(self):
         """Test the functionality of truncating word pieces"""
@@ -61,9 +63,9 @@ class TestPretrainedTransformerIndexer(unittest.TestCase):
                                               special_tokens_fix=1)
         indexed_tokens = token_indexer.tokens_to_indices(self.tokens, self.vocab, self.model_name)       
 
-        assert indexed_tokens['bert'] == []
-        assert indexed_tokens['bert-offsets'] == [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
-        assert indexed_tokens['mask'] == [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        self.assertEqual(indexed_tokens['bert'], [])
+        self.assertEqual(indexed_tokens['bert-offsets'], [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1])
+        self.assertEqual(indexed_tokens['mask'], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
 
     def test_as_padded_tensor_dict(self):
         """Test the method as_padded_tensor_dict"""
@@ -80,10 +82,10 @@ class TestPretrainedTransformerIndexer(unittest.TestCase):
                                               special_tokens_fix=1)
 
         padded_tensor = token_indexer.pad_token_sequence(tokens, desired_num_tokens, padding_lengths)
-        assert padded_tensor['bert'] == [50265, 37158, 15, 1012, 2156,
+        self.assertEqual(padded_tensor['bert'], [50265, 37158, 15, 1012, 2156,
         89, 32, 460, 5, 12043, 268, 8, 4131, 22761, 13659, 49, 1351, 8, 11360,
         7, 12043, 7768, 479, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0]
+        0, 0])
 
 
 if __name__ == "__main__":
