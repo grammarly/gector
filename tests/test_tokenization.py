@@ -25,7 +25,7 @@ class TokenizationTests(unittest.TestCase):
         20, 21, 22])
         tested_results = get_bpe_groups(token_offsets, bpe_offsets, input_ids)
 
-        assert expected_results == tested_results
+        self.assertEqual(expected_results == tested_results)
 
     def test_reduce_input_ids(self):
         """Test reduce_input_ids method with an input sentence."""
@@ -40,7 +40,7 @@ class TokenizationTests(unittest.TestCase):
         [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22])
         tested_results = reduce_input_ids(input_ids, bpe_groups, saved_ids)
 
-        assert expected_results == tested_results
+        self.assertEqual(expected_results == tested_results)
 
     def test_get_offsets_and_reduce_input_ids(self):
         """Test get_offsets_and_reduce_input_ids method with an input sentence."""
@@ -69,7 +69,7 @@ class TokenizationTests(unittest.TestCase):
                                                           max_bpe_pieces=max_bpe_pieces
                                                           )
 
-        assert expected_results == tested_results
+        self.assertEqual(assert expected_results == tested_results)
 
     def test_get_offset_for_tokens(self):
         """Test get_offset_for_tokens method with an input sentence."""
@@ -81,7 +81,7 @@ class TokenizationTests(unittest.TestCase):
         (30, 33), (34, 40), (41, 44), (45, 57), (58, 61), (62, 70), (71, 81),
         (82, 87), (88, 94), (95, 98), (99, 108), (109, 111), (112, 121), (122, 131), (132, 133)]
         tested_results = get_offset_for_tokens(tokens)
-        assert expected_results == tested_results
+        self.assertEqual(expected_results == tested_results)
 
     def test_get_token_offsets(self):
         """Test get_token_offsets method with an input sentence."""
@@ -93,7 +93,7 @@ class TokenizationTests(unittest.TestCase):
         (30, 33), (34, 40), (41, 44), (45, 57), (58, 61), (62, 70), (71, 81), (82, 87),
         (88, 94), (95, 98), (99, 108), (109, 111), (112, 121), (122, 131), (132, 133)]]
 
-        assert expected_results == tested_results
+        self.assertEqual(expected_results == tested_results)
 
     def test_pad_output(self):
         """Test pad_output with an input sentence."""
@@ -109,7 +109,7 @@ class TokenizationTests(unittest.TestCase):
         17, 18, 19, 20, 21, 22]], 'mask': [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
         1, 1, 1, 1, 1, 1, 1, 1]]}
 
-        assert expected_results == tested_results
+        self.assertEqual(expected_results == tested_results)
 
 
     def test_tokenize_batch(self):
@@ -128,7 +128,7 @@ class TokenizationTests(unittest.TestCase):
         'bert-offsets': [[0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23,
         24]], 'mask': [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]]}
 
-        assert expected_results == tested_results
+        self.assertEqual(expected_results == tested_results)
 
         
 if __name__ == '__main__':
