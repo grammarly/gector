@@ -1,12 +1,13 @@
 """Tweaked version of corresponding AllenNLP file"""
 import logging
 from collections import defaultdict
+import torch
 from typing import Dict, List, Callable
 
 from allennlp.common.util import pad_sequence_to_length
 from allennlp.data.token_indexers.token_indexer import TokenIndexer
-from allennlp.data.tokenizers.token import Token
-from allennlp.data.vocabulary import Vocabulary
+from allennlp.data import Token
+from allennlp.data import Vocabulary
 from overrides import overrides
 from transformers import AutoTokenizer
 
@@ -21,7 +22,7 @@ logger = logging.getLogger(__name__)
 # TODO(joelgrus): Figure out how to generate token_type_ids out of this token indexer.
 
 
-class TokenizerIndexer(TokenIndexer[int]):
+class TokenizerIndexer(TokenIndexer):
     """
     A token indexer that does the wordpiece-tokenization (e.g. for BERT embeddings).
     If you are using one of the pretrained BERT models, you'll want to use the ``PretrainedBertIndexer``
@@ -59,8 +60,7 @@ class TokenizerIndexer(TokenIndexer[int]):
 
     @overrides
     def tokens_to_indices(self, tokens: List[Token],
-                          vocabulary: Vocabulary,
-                          index_name: str) -> Dict[str, List[int]]:
+                          vocabulary: Vocabulary) -> Dict[str, List[int]]:
         text = [token.text for token in tokens]
         batch_tokens = [text]
 
@@ -76,23 +76,26 @@ class TokenizerIndexer(TokenIndexer[int]):
         # If we only use pretrained models, we don't need to do anything here.
         pass
 
-    @overrides
     def get_padding_token(self) -> int:
         return 0
 
-    @overrides
-    def get_padding_lengths(self, token: int) -> Dict[str, int]:  # pylint: disable=unused-argument
-        return {}
+    # @overrides
+    # def get_padding_lengths(self, token: int) -> Dict[str, int]:  # pylint: disable=unused-argument
+    #     return {}
 
-    @overrides
-    def pad_token_sequence(self,
+    # @overrides
+    def as_padded_tensor_dict(self,
                            tokens: Dict[str, List[int]],
-                           desired_num_tokens: Dict[str, int],
                            padding_lengths: Dict[str, int]) -> Dict[str, List[int]]:  # pylint: disable=unused-argument
-        return {key: pad_sequence_to_length(val, desired_num_tokens[key])
-                for key, val in tokens.items()}
+        
+        tensor_dict = {}
+        for key, val in tokens.items():
+            tensor = torch.LongTensor(pad_sequence_to_length(val, padding_lengths[key]))
+            
+            tensor_dict[key] = tensor
+        return tensor_dict
 
-    @overrides
+    # @overrides
     def get_keys(self, index_name: str) -> List[str]:
         """
         We need to override this because the indexer generates multiple keys.

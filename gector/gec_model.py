@@ -5,12 +5,12 @@ import sys
 from time import time
 
 import torch
-from allennlp.data.dataset import Batch
+from allennlp.data import Batch
 from allennlp.data.fields import TextField
-from allennlp.data.instance import Instance
+from allennlp.data import Instance
 from allennlp.data.tokenizers import Token
-from allennlp.data.vocabulary import Vocabulary
-from allennlp.modules.text_field_embedders import BasicTextFieldEmbedder
+from allennlp.data import Vocabulary
+from gector.basic_field_embedder import BasicTextFieldEmbedder
 from allennlp.nn import util
 
 from gector.bert_token_embedder import PretrainedBertEmbedder
@@ -207,8 +207,7 @@ class GecBERTModel(object):
                 special_tokens_fix=special_tokens_fix,
             )
         }
-        text_field_embedder = BasicTextFieldEmbedder(
-            token_embedders=embedders,
+        text_field_embedder = BasicTextFieldEmbedder(token_embedders=embedders, 
             embedder_to_indexer_map={"bert": ["bert", "bert-offsets"]},
             allow_unmatched_keys=True,
         )
