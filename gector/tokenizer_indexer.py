@@ -61,9 +61,8 @@ class TokenizerIndexer(TokenIndexer):
         self.max_pieces_per_sentence = 80
 
     @overrides
-    def tokens_to_indices(
-        self, tokens: List[Token], vocabulary: Vocabulary
-    ) -> Dict[str, List[int]]:
+    def tokens_to_indices(self, tokens: List[Token],
+                          vocabulary: Vocabulary) -> Dict[str, List[int]]:
         text = [token.text for token in tokens]
         batch_tokens = [text]
 
@@ -94,8 +93,6 @@ class TokenizerIndexer(TokenIndexer):
             tensor = torch.LongTensor(pad_sequence_to_length(val, padding_lengths[key]))
 
             tensor_dict[key] = tensor
-        return tensor_dict
-
 
 @TokenIndexer.register("gec-pretrained-bert-indexer")
 class PretrainedBertIndexer(TokenizerIndexer):
