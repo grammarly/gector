@@ -1,10 +1,9 @@
 """Tests for the PretrainedBertIndexer module."""
 
-from allennlp.data.tokenizers import WordTokenizer
 from allennlp.common.testing import ModelTestCase
 from gector.tokenizer_indexer import PretrainedBertIndexer
-from allennlp.data.tokenizers.word_splitter import BertBasicWordSplitter
 from allennlp.data.vocabulary import Vocabulary
+from allennlp.data import Token
 
 
 class TestPretrainedTransformerIndexer(ModelTestCase):
@@ -15,10 +14,9 @@ class TestPretrainedTransformerIndexer(ModelTestCase):
 
         super().setUp()
 
-        tokenizer = WordTokenizer(word_splitter=BertBasicWordSplitter())
         sentence = "the Quick brown fox jumped over the laziest lazy elmo"
         vocab_path = "data/output_vocabulary"
-        self.tokens = tokenizer.tokenize(sentence)
+        self.tokens = [Token(word) for word in sentence.split()]
         self.vocab = Vocabulary.from_files(vocab_path)
         self.model_name = "roberta-base"
 
@@ -36,7 +34,7 @@ class TestPretrainedTransformerIndexer(ModelTestCase):
         )
         assert indexed_tokens["bert"] == [
             627,
-            2119,
+            13287,
             6219,
             23602,
             4262,
@@ -52,7 +50,7 @@ class TestPretrainedTransformerIndexer(ModelTestCase):
         assert indexed_tokens["mask"] == [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 
     def test_toggle_special_tokens_fix(self):
-        """Test togging special_tokens_fix to be False"""
+        """Test toggling special_tokens_fix to be False"""
         token_indexer = PretrainedBertIndexer(
             pretrained_model=self.model_name,
             max_pieces_per_token=5,
@@ -66,7 +64,7 @@ class TestPretrainedTransformerIndexer(ModelTestCase):
 
         assert indexed_tokens["bert"] == [
             627,
-            2119,
+            13287,
             6219,
             23602,
             4262,

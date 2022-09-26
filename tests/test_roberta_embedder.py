@@ -5,8 +5,7 @@ from allennlp.common.testing import ModelTestCase
 from allennlp.data.dataset import Batch
 from allennlp.data.fields import TextField
 from allennlp.data.instance import Instance
-from allennlp.data.tokenizers import WordTokenizer
-from allennlp.data.tokenizers.word_splitter import BertBasicWordSplitter
+from allennlp.data import Token
 from allennlp.data.vocabulary import Vocabulary
 from gector.bert_token_embedder import PretrainedBertEmbedder
 from gector.tokenizer_indexer import PretrainedBertIndexer
@@ -16,11 +15,10 @@ class TestRobertaEmbedder(ModelTestCase):
     """Test token embedder for RoBERTa model."""
 
     def setUp(self):
-        """Set up tokenizer and indexer."""
+        """Set up indexer."""
 
         super().setUp()
 
-        self.tokenizer = WordTokenizer(word_splitter=BertBasicWordSplitter())
         vocab_path = "data/output_vocabulary"
         self.vocab = Vocabulary.from_files(vocab_path)
         self.model_name = "roberta-base"
@@ -97,10 +95,10 @@ class TestRobertaEmbedder(ModelTestCase):
         """Test token embedder end-to-end."""
 
         sentence1 = "the quickest quick brown fox jumped over the lazy dog"
-        tokens1 = self.tokenizer.tokenize(sentence1)
+        tokens1 = [Token(word) for word in sentence1.split()]
 
         sentence2 = "the quick brown fox jumped over the laziest lazy elmo"
-        tokens2 = self.tokenizer.tokenize(sentence2)
+        tokens2 = [Token(word) for word in sentence2.split()]
 
         instance1 = Instance(
             {"tokens": TextField(tokens1, {"bert": self.token_indexer})}
@@ -178,7 +176,7 @@ class TestRobertaEmbedder(ModelTestCase):
         )
 
         sentence = "the " * 512
-        tokens = self.tokenizer.tokenize(sentence)
+        tokens = [Token(word) for word in sentence.split()]
 
         instance = Instance(
             {"tokens": TextField(tokens, {"bert": self.token_indexer})}
@@ -203,7 +201,7 @@ class TestRobertaEmbedder(ModelTestCase):
         )
 
         sentence = "the " * 514
-        tokens = self.tokenizer.tokenize(sentence)
+        tokens = [Token(word) for word in sentence.split()]
 
         instance = Instance(
             {"tokens": TextField(tokens, {"bert": self.token_indexer})}
