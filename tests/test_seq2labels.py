@@ -9,6 +9,7 @@ from allennlp.nn.util import move_to_device
 from allennlp.data import Instance
 from allennlp.data import Token
 from allennlp.data import Vocabulary
+from allennlp.nn.util import move_to_device
 
 from gector.basic_field_embedder import BasicTextFieldEmbedder
 from gector.bert_token_embedder import PretrainedBertEmbedder
