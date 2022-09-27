@@ -181,7 +181,7 @@ class TestPretrainedBertEmbedder(ModelTestCase):
         assert list(bert_vectors.shape) == [2, 10, 768]
 
     def test_max_length(self):
-        """Test that max input length works."""
+        """Test that max input length works (default max len = 512)."""
 
         token_embedder = PretrainedBertEmbedder(
             self.model_name,
@@ -206,7 +206,7 @@ class TestPretrainedBertEmbedder(ModelTestCase):
         token_embedder(tokens["bert"], tokens["bert-offsets"])
 
     def test_max_length_raise_error(self):
-        """Test that input greater than max length raises error."""
+        """Test that input greater than max length (default = 512) raises error."""
 
         token_embedder = PretrainedBertEmbedder(
             self.model_name,
