@@ -7,6 +7,7 @@ from allennlp.data.fields import TextField
 from allennlp.data.fields import MetadataField
 from allennlp.nn.util import move_to_device
 from allennlp.data import Instance
+from allennlp.data.fields import MetadataField
 from allennlp.data import Token
 from allennlp.data import Vocabulary
 from allennlp.nn.util import move_to_device
