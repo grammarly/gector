@@ -32,6 +32,16 @@ class TestGecPredictor(ModelTestCase):
     def setUp(self):
         super().setUp()
         test_fixtures_dir_path = Path(__file__).parent.parent / "test_fixtures"
+        # Download weights for model archive
+        weights_url = "https://grammarly-nlp-data-public.s3.amazonaws.com/gector/roberta_1_gectorv2.th"
+        test_fixtures_dir_path = Path(__file__).parent.parent / "test_fixtures"
+        model_path = test_fixtures_dir_path / "roberta_model" / "weights.th"
+        if not model_path.exists():
+            response = requests.get(weights_url)
+            with model_path.open("wb") as out_fp:
+                # Write out data with progress bar
+                for data in tqdm(response.iter_content()):
+                    out_fp.write(data)
         model_path = test_fixtures_dir_path / "roberta_model"
         self.model_path = model_path
         sentence1 = "I run to a stores every day."
