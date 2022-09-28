@@ -25,7 +25,7 @@ class TestGecModel(ModelTestCase):
         self.model_name = "roberta-base"
         model_url = "https://grammarly-nlp-data-public.s3.amazonaws.com/gector/roberta_1_gectorv2.th"
         test_fixtures_dir_path = Path(__file__).parent.parent / "test_fixtures"
-        model_path = test_fixtures_dir_path / "roberta_1_gectorv2.th"
+        model_path = test_fixtures_dir_path / "roberta_model" / "weights.th"
         if not model_path.exists():
             response = requests.get(model_url)
             with model_path.open("wb") as out_fp:
