@@ -4,6 +4,7 @@ import numpy as np
 from allennlp.common.testing import ModelTestCase
 from allennlp.data.dataset import Batch
 from allennlp.data.fields import TextField
+from allennlp.data.fields import MetadataField
 from allennlp.data.instance import Instance
 from allennlp.data import Token
 from allennlp.modules.text_field_embedders import BasicTextFieldEmbedder
@@ -53,16 +54,20 @@ class TestSeq2Labels(ModelTestCase):
         self.device_index = 0 if torch.cuda.is_available() else -1
 
         sentence1 = "the quickest quick brown fox jumped over the lazy dog"
-        tokens1 = [Token(word) for word in sentence1.split()]
+        sentence1_words = [word for word in sentence1.split()]
+        tokens1 = [Token(word) for word in sentence1_words]
 
         sentence2 = "the quick brown fox jumped over the laziest lazy elmo"
-        tokens2 = [Token(word) for word in sentence2.split()]
+        sentence2_words = [word for word in sentence2.split()]
+        tokens2 = [Token(word) for word in sentence2_words]
 
         instance1 = Instance(
-            {"tokens": TextField(tokens1, {"bert": token_indexer})}
+            {"tokens": TextField(tokens1, {"bert": token_indexer}),
+             "metadata": MetadataField({"words": sentence1_words})}
         )
         instance2 = Instance(
-            {"tokens": TextField(tokens2, {"bert": token_indexer})}
+            {"tokens": TextField(tokens2, {"bert": token_indexer}),
+             "metadata": MetadataField({"words": sentence2_words})}
         )
 
         self.batch = Batch([instance1, instance2])
@@ -93,6 +98,8 @@ class TestSeq2Labels(ModelTestCase):
                 "max_error_probability",
                 "labels",
                 "d_tags",
+                "words",
+                "corrected_words"
             ]
         )
         probs = output_dict["class_probabilities_labels"][0].data.cpu().numpy()
