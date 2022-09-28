@@ -6,12 +6,12 @@ from allennlp.models import Model
 from allennlp.common.util import sanitize
 from overrides import overrides
 from allennlp.common.util import JsonDict
-from allennlp.data import DatasetReader, Instance
+from allennlp.data import DatasetReader, Instance, Token
 from allennlp.data.fields import TextField, SequenceLabelField
 from allennlp.data.tokenizers.word_splitter import SpacyWordSplitter
 from allennlp.data.tokenizers.word_splitter import JustSpacesWordSplitter
 from allennlp.models import Model
-
+from utils.helpers import START_TOKEN
 
 
 @Predictor.register("gec-predictor")
@@ -51,6 +51,8 @@ class GecPredictor(Predictor):
         """
         sentence = json_dict["sentence"]
         tokens = self._tokenizer.split_words(sentence)
+        # Add start token to front
+        tokens = [Token(START_TOKEN)] + tokens
         return self._dataset_reader.text_to_instance(tokens)
 
 
