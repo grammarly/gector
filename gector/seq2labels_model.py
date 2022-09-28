@@ -195,15 +195,16 @@ class Seq2Labels(Model):
             max_probs = torch.max(probs, dim=0)
             probs = max_probs[0].tolist()
             indices = max_probs[1].tolist()
-            print(f"{indices=}")
-            suggested_token_operations = output_dict['labels'][i]
-            actions_per_token = self.get_token_actions(indices=indices, probs=probs,
-                                                       sugg_tokens=suggested_token_operations)
-            # Filter out cases where no corrections should be applied
-            actions_per_token = [action for action in actions_per_token if action]
-            print(f"{actions_per_token=}")
-            corrected_sent = get_target_sent_by_edits(output_dict['words'][i], actions_per_token)
-            output_dict['corrected_words'].append(corrected_sent)
+            if max(indices) == 0: # No corrections should be performed
+                output_dict["corrected_words"] = output_dict["words"]
+            else:
+                suggested_token_operations = output_dict['labels'][i]
+                actions_per_token = self.get_token_actions(indices=indices, probs=probs,
+                                                           sugg_tokens=suggested_token_operations)
+                # Filter out cases where no corrections should be applied
+                actions_per_token = [action for action in actions_per_token if action]
+                corrected_sent = get_target_sent_by_edits(output_dict['words'][i], actions_per_token)
+                output_dict['corrected_words'].append(corrected_sent)
         return output_dict
 
     def get_token_actions(self, indices, probs, sugg_tokens):
@@ -227,9 +228,8 @@ class Seq2Labels(Model):
             elif sugg_token.startswith('$TRANSFORM_') or sugg_token.startswith("$MERGE_"):
                 sugg_token_clear = sugg_token[:]
             else:
-                print(f"{sugg_token=}")
                 sugg_token_clear = sugg_token[sugg_token.index('_') + 1:]
-            actions.append((start_pos, end_pos, sugg_token_clear, prob))
+            actions.append((start_pos - 1, end_pos - 1, sugg_token_clear, prob))
         return actions
 
     @overrides
