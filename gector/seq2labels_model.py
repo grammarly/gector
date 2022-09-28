@@ -12,6 +12,7 @@ from allennlp.nn.util import get_text_field_mask, sequence_cross_entropy_with_lo
 from allennlp.training.metrics import CategoricalAccuracy
 from overrides import overrides
 from torch.nn.modules.linear import Linear
+from utils.helpers import PAD, UNK, get_target_sent_by_edits
 
 
 @Model.register("seq2labels")
@@ -60,6 +61,7 @@ class Seq2Labels(Model):
                  label_smoothing: float = 0.0,
                  confidence: float = 0.0,
                  del_confidence: float = 0.0,
+                 min_error_probability: float = 0.0,
                  initializer: InitializerApplicator = InitializerApplicator(),
                  regularizer: Optional[RegularizerApplicator] = None) -> None:
         super(Seq2Labels, self).__init__(vocab, regularizer)
@@ -72,6 +74,7 @@ class Seq2Labels(Model):
         self.label_smoothing = label_smoothing
         self.confidence = confidence
         self.del_conf = del_confidence
+        self.min_error_probability = min_error_probability
         self.incorr_index = self.vocab.get_token_index("INCORRECT",
                                                        namespace=detect_namespace)
 
@@ -185,7 +188,49 @@ class Seq2Labels(Model):
                         for x in argmax_indices]
                 all_tags.append(tags)
             output_dict[f'{label_namespace}'] = all_tags
+        batch_size = len(output_dict['labels'])
+        output_dict['corrected_words'] = []
+        for i in range(batch_size):
+            probs = output_dict['class_probabilities_labels'][i]
+            max_probs = torch.max(probs, dim=0)
+            probs = max_probs[0].tolist()
+            indices = max_probs[1].tolist()
+            print(f"{indices=}")
+            suggested_token_operations = output_dict['labels'][i]
+            actions_per_token = self.get_token_actions(indices=indices, probs=probs,
+                                                       sugg_tokens=suggested_token_operations)
+            # Filter out cases where no corrections should be applied
+            actions_per_token = [action for action in actions_per_token if action]
+            print(f"{actions_per_token=}")
+            corrected_sent = get_target_sent_by_edits(output_dict['words'][i], actions_per_token)
+            output_dict['corrected_words'].append(corrected_sent)
         return output_dict
+
+    def get_token_actions(self, indices, probs, sugg_tokens):
+        """Get list of suggested actions for token."""
+        actions = []
+        for index, prob, sugg_token in zip(indices, probs, sugg_tokens):
+            # cases when we don't need to do anything
+            if prob < self.min_error_probability or sugg_token in [UNK, PAD, '$KEEP']:
+                actions.append(None)
+                continue
+
+            if sugg_token.startswith('$REPLACE_') or sugg_token.startswith('$TRANSFORM_') or sugg_token == '$DELETE':
+                start_pos = index
+                end_pos = index + 1
+            elif sugg_token.startswith("$APPEND_") or sugg_token.startswith("$MERGE_"):
+                start_pos = index + 1
+                end_pos = index + 1
+
+            if sugg_token == "$DELETE":
+                sugg_token_clear = ""
+            elif sugg_token.startswith('$TRANSFORM_') or sugg_token.startswith("$MERGE_"):
+                sugg_token_clear = sugg_token[:]
+            else:
+                print(f"{sugg_token=}")
+                sugg_token_clear = sugg_token[sugg_token.index('_') + 1:]
+            actions.append((start_pos, end_pos, sugg_token_clear, prob))
+        return actions
 
     @overrides
     def get_metrics(self, reset: bool = False) -> Dict[str, float]:
