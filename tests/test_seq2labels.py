@@ -2,7 +2,6 @@ import torch
 import numpy as np
 
 from allennlp.common.testing import ModelTestCase
-from allennlp.common.testing import ModelTestCase
 from allennlp.data.dataset import Batch
 from allennlp.data.fields import TextField
 from allennlp.data.instance import Instance
