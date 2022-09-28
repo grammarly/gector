@@ -9,9 +9,9 @@ from allennlp.common.util import JsonDict
 from allennlp.data import DatasetReader, Instance
 from allennlp.data.fields import TextField, SequenceLabelField
 from allennlp.data.tokenizers.word_splitter import SpacyWordSplitter
+from allennlp.data.tokenizers.word_splitter import JustSpacesWordSplitter
 from allennlp.models import Model
 
-from utils.helpers import PAD, UNK
 
 
 @Predictor.register("gec-predictor")
@@ -26,7 +26,8 @@ class GecPredictor(Predictor):
                  language: str = 'en_core_web_sm',
                  iterations: int = 3) -> None:
         super().__init__(model, dataset_reader)
-        self._tokenizer = SpacyWordSplitter(language=language, pos_tags=True)
+        #self._tokenizer = SpacyWordSplitter(language=language, pos_tags=True)
+        self._tokenizer = JustSpacesWordSplitter()
         self._iterations = iterations
 
     def predict(self, sentence: str) -> JsonDict:
@@ -52,27 +53,6 @@ class GecPredictor(Predictor):
         tokens = self._tokenizer.split_words(sentence)
         return self._dataset_reader.text_to_instance(tokens)
 
-    def get_token_action(self, token, index, prob, sugg_token):
-        """Get list of suggested actions for token."""
-        # cases when we don't need to do anything
-        if prob < self.min_error_probability or sugg_token in [UNK, PAD, '$KEEP']:
-            return None
-
-        if sugg_token.startswith('$REPLACE_') or sugg_token.startswith('$TRANSFORM_') or sugg_token == '$DELETE':
-            start_pos = index
-            end_pos = index + 1
-        elif sugg_token.startswith("$APPEND_") or sugg_token.startswith("$MERGE_"):
-            start_pos = index + 1
-            end_pos = index + 1
-
-        if sugg_token == "$DELETE":
-            sugg_token_clear = ""
-        elif sugg_token.startswith('$TRANSFORM_') or sugg_token.startswith("$MERGE_"):
-            sugg_token_clear = sugg_token[:]
-        else:
-            sugg_token_clear = sugg_token[sugg_token.index('_') + 1:]
-
-        return start_pos - 1, end_pos - 1, sugg_token_clear, prob
 
     @overrides
     def predictions_to_labeled_instances(self,
