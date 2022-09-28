@@ -9,10 +9,10 @@ from allennlp.data import Token
 class TestPretrainedTransformerIndexer(ModelTestCase):
     """A test case that tests PretrainedBertIndexer methods."""
 
-    def setUp(self):
+    def setup_method(self):
         """Set up tokenizer and indexer."""
 
-        super().setUp()
+        super().setup_method()
 
         sentence = "the Quick brown fox jumped over the laziest lazy elmo"
         vocab_path = "data/output_vocabulary"
@@ -30,7 +30,7 @@ class TestPretrainedTransformerIndexer(ModelTestCase):
             special_tokens_fix=1,
         )
         indexed_tokens = token_indexer.tokens_to_indices(
-            self.tokens, self.vocab, self.model_name
+            self.tokens, self.vocab
         )
         assert indexed_tokens["bert"] == [
             627,
@@ -59,7 +59,7 @@ class TestPretrainedTransformerIndexer(ModelTestCase):
             special_tokens_fix=0,
         )
         indexed_tokens = token_indexer.tokens_to_indices(
-            self.tokens, self.vocab, self.model_name
+            self.tokens, self.vocab
         )
 
         assert indexed_tokens["bert"] == [
@@ -89,7 +89,7 @@ class TestPretrainedTransformerIndexer(ModelTestCase):
             special_tokens_fix=1,
         )
         indexed_tokens = token_indexer.tokens_to_indices(
-            self.tokens, self.vocab, self.model_name
+            self.tokens, self.vocab
         )
 
         assert indexed_tokens["bert"] == []
@@ -188,7 +188,6 @@ class TestPretrainedTransformerIndexer(ModelTestCase):
             "mask": 41,
             "num_tokens": 42,
         }
-        desired_num_tokens = {"bert": 42, "bert-offsets": 41, "mask": 41}
 
         token_indexer = PretrainedBertIndexer(
             pretrained_model=self.model_name,
@@ -198,10 +197,10 @@ class TestPretrainedTransformerIndexer(ModelTestCase):
             special_tokens_fix=1,
         )
 
-        padded_tensor = token_indexer.pad_token_sequence(
-            tokens, desired_num_tokens, padding_lengths
+        padded_tensor = token_indexer.as_padded_tensor_dict(
+            tokens, padding_lengths
         )
-        assert padded_tensor["bert"] == [
+        assert padded_tensor["bert"].tolist() == [
             50265,
             37158,
             15,
