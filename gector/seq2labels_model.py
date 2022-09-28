@@ -12,7 +12,7 @@ from allennlp.nn.util import get_text_field_mask, sequence_cross_entropy_with_lo
 from allennlp.training.metrics import CategoricalAccuracy
 from overrides import overrides
 from torch.nn.modules.linear import Linear
-from utils.helpers import PAD, UNK, get_target_sent_by_edits
+from utils.helpers import PAD, UNK, get_target_sent_by_edits, START_TOKEN
 
 
 @Model.register("seq2labels")
@@ -164,7 +164,9 @@ class Seq2Labels(Model):
             output_dict["loss"] = loss_labels + loss_d
 
         if metadata is not None:
-            output_dict["words"] = [x["words"] for x in metadata]
+            output_dict["words"] = []
+            for instance in metadata:
+                output_dict["words"].append([word for word in instance["words"] if word != START_TOKEN])
         return output_dict
 
     @overrides
@@ -191,47 +193,54 @@ class Seq2Labels(Model):
         batch_size = len(output_dict['labels'])
         output_dict['corrected_words'] = []
         for i in range(batch_size):
+            words_in_instance = output_dict['words'][i]
+            batch_len = len(words_in_instance)
             probs = output_dict['class_probabilities_labels'][i]
             max_probs = torch.max(probs, dim=0)
             probs = max_probs[0].tolist()
             indices = max_probs[1].tolist()
-            if max(indices) == 0: # No corrections should be performed
-                output_dict["corrected_words"] = output_dict["words"]
+            if max(indices) == 0:  # No corrections should be performed
+                output_dict["corrected_words"].append(output_dict["words"][i])
             else:
-                suggested_token_operations = output_dict['labels'][i]
-                actions_per_token = self.get_token_actions(indices=indices, probs=probs,
-                                                           sugg_tokens=suggested_token_operations)
-                # Filter out cases where no corrections should be applied
-                actions_per_token = [action for action in actions_per_token if action]
+                actions_per_token = []
+                for j in range(batch_len):
+                    if j == 0:
+                        token = START_TOKEN
+                    else:
+                        token = words_in_instance[j]
+                    if indices[j] == 0:
+                        continue
+                    suggested_token_operation = output_dict['labels'][i][j]
+                    action = self.get_token_action(index=j, prob=probs[j],
+                                                   sugg_token=suggested_token_operation)
+                    if not action:
+                        continue
+                    actions_per_token.append(action)
                 corrected_sent = get_target_sent_by_edits(output_dict['words'][i], actions_per_token)
                 output_dict['corrected_words'].append(corrected_sent)
         return output_dict
 
-    def get_token_actions(self, indices, probs, sugg_tokens):
-        """Get list of suggested actions for token."""
-        actions = []
-        for index, prob, sugg_token in zip(indices, probs, sugg_tokens):
-            # cases when we don't need to do anything
-            if prob < self.min_error_probability or sugg_token in [UNK, PAD, '$KEEP']:
-                actions.append(None)
-                continue
+    def get_token_action(self, index, prob, sugg_token):
+        """Get lost of suggested actions for token."""
+        # cases when we don't need to do anything
+        if prob < self.min_error_probability or sugg_token in [UNK, PAD, '$KEEP']:
+            return None
 
-            if sugg_token.startswith('$REPLACE_') or sugg_token.startswith('$TRANSFORM_') or sugg_token == '$DELETE':
-                start_pos = index
-                end_pos = index + 1
-            elif sugg_token.startswith("$APPEND_") or sugg_token.startswith("$MERGE_"):
-                start_pos = index + 1
-                end_pos = index + 1
+        if sugg_token.startswith('$REPLACE_') or sugg_token.startswith('$TRANSFORM_') or sugg_token == '$DELETE':
+            start_pos = index
+            end_pos = index + 1
+        elif sugg_token.startswith("$APPEND_") or sugg_token.startswith("$MERGE_"):
+            start_pos = index + 1
+            end_pos = index + 1
 
-            if sugg_token == "$DELETE":
-                sugg_token_clear = ""
-            elif sugg_token.startswith('$TRANSFORM_') or sugg_token.startswith("$MERGE_"):
-                sugg_token_clear = sugg_token[:]
-            else:
-                sugg_token_clear = sugg_token[sugg_token.index('_') + 1:]
-            actions.append((start_pos - 1, end_pos - 1, sugg_token_clear, prob))
-        return actions
+        if sugg_token == "$DELETE":
+            sugg_token_clear = ""
+        elif sugg_token.startswith('$TRANSFORM_') or sugg_token.startswith("$MERGE_"):
+            sugg_token_clear = sugg_token[:]
+        else:
+            sugg_token_clear = sugg_token[sugg_token.index('_') + 1:]
 
+        return start_pos - 1, end_pos - 1, sugg_token_clear, prob
     @overrides
     def get_metrics(self, reset: bool = False) -> Dict[str, float]:
         metrics_to_return = {metric_name: metric.get_metric(reset) for
