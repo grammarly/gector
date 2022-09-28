@@ -48,6 +48,6 @@ class TestGecPredictor(ModelTestCase):
         assert set(prediction[0].keys()) == {'logits_labels', 'logits_d_tags', 'class_probabilities_labels',
                                              'class_probabilities_d_tags', 'max_error_probability', 'words', 'labels',
                                              'd_tags', 'corrected_words'}
-        assert prediction[0]["corrected_words"] == ['$START', 'I', 'run', 'to', 'the', 'stores', 'every', 'day.']
-        assert prediction[1]["corrected_words"] == ['$START', 'The', 'quick', 'brown', 'foxes', 'jumps', 'over', "Elmo's",
+        assert prediction[0]["corrected_words"] == ['I', 'run', 'to', 'the', 'stores', 'every', 'day.']
+        assert prediction[1]["corrected_words"] == ['The', 'quick', 'brown', 'foxes', 'jumps', 'over', "Elmo's",
                                                     'laziest', 'friend']
