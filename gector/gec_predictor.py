@@ -38,11 +38,30 @@ class GecPredictor(Predictor):
 
     @overrides
     def predict_instance(self, instance: Instance) -> JsonDict:
+        """
+        This special predict_instance method allows for applying the correction model multiple times.
+        """
         for i in range(self._iterations):
-            outputs = self._model.forward_on_instance(instance)
+            output = self._model.forward_on_instance(instance)
             # integrate predictions back into instance for next iteration
-        return sanitize(outputs)
+            tokens = [Token(word) for word in output["corrected_words"]]
+            instance = self._dataset_reader.text_to_instance(tokens)
+        return sanitize(output)
 
+    @overrides
+    def predict_batch_instance(self, instances: List[Instance]) -> List[JsonDict]:
+        """
+        This special predict_batch_instance method allows for applying the correction model multiple times.
+        """
+        for i in range(self._iterations):
+            outputs = self._model.forward_on_instances(instances)
+            corrected_instances = []
+            for output in outputs:
+                tokens = [Token(word) for word in output["corrected_words"]]
+                instance = self._dataset_reader.text_to_instance(tokens)
+                corrected_instances.append(instance)
+            instances = corrected_instances
+        return sanitize(outputs)
     @overrides
     def _json_to_instance(self, json_dict: JsonDict) -> Instance:
         """
