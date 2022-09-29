@@ -16,6 +16,10 @@ pip install -e .
 ```
 The project was tested using Python 3.8.
 
+## Unit tests
+After activating the conda environment, simply run the code below: 
+`pytest -v tests`
+
 ## Datasets
 All the public GEC datasets used in the paper can be downloaded from [here](https://www.cl.cam.ac.uk/research/nl/bea2019st/#data).<br>
 Synthetically created datasets can be generated/downloaded [here](https://github.com/awasthiabhijeet/PIE/tree/master/errorify).<br>
