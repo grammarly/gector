@@ -9,7 +9,7 @@ from allennlp.data.vocabulary import Vocabulary
 from allennlp.data import Token
 from allennlp.data.instance import Instance
 from allennlp.data.fields import TextField
-from allennlp.data.dataset import Batch
+from allennlp.data import Batch
 
 from gector.gec_model import GecBERTModel
 from gector.bert_token_embedder import PretrainedBertEmbedder
@@ -19,8 +19,8 @@ from gector.tokenizer_indexer import PretrainedBertIndexer
 class TestGecModel(ModelTestCase):
     """Test class for GecModel"""
 
-    def setUp(self):
-        super().setUp()
+    def setup_method(self):
+        super().setup_method()
         self.vocab_path = "data/output_vocabulary"
         self.vocab = Vocabulary.from_files(self.vocab_path)
         self.model_name = "roberta-base"
