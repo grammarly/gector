@@ -41,11 +41,13 @@ class TokenizerIndexer(TokenIndexer):
         See :class:`TokenIndexer`.
     """
 
-    def __init__(self,
-                 tokenizer: Callable[[str], List[str]],
-                 max_pieces: int = 512,
-                 max_pieces_per_token: int = 3,
-                 token_min_padding_length: int = 0) -> None:
+    def __init__(
+        self,
+        tokenizer: Callable[[str], List[str]],
+        max_pieces: int = 512,
+        max_pieces_per_token: int = 3,
+        token_min_padding_length: int = 0,
+    ) -> None:
         super().__init__(token_min_padding_length)
 
         # The BERT code itself does a two-step tokenization:
@@ -59,15 +61,18 @@ class TokenizerIndexer(TokenIndexer):
         self.max_pieces_per_sentence = 80
 
     @overrides
-    def tokens_to_indices(self, tokens: List[Token],
-                          vocabulary: Vocabulary) -> Dict[str, List[int]]:
+    def tokens_to_indices(
+        self, tokens: List[Token], vocabulary: Vocabulary
+    ) -> Dict[str, List[int]]:
         text = [token.text for token in tokens]
         batch_tokens = [text]
 
-        output_fast = tokenize_batch(self.tokenizer,
-                                     batch_tokens,
-                                     max_bpe_length=self.max_pieces,
-                                     max_bpe_pieces=self.max_pieces_per_token)
+        output_fast = tokenize_batch(
+            self.tokenizer,
+            batch_tokens,
+            max_bpe_length=self.max_pieces,
+            max_bpe_pieces=self.max_pieces_per_token,
+        )
         output_fast = {k: v[0] for k, v in output_fast.items()}
         return output_fast
 
@@ -79,29 +84,17 @@ class TokenizerIndexer(TokenIndexer):
     def get_padding_token(self) -> int:
         return 0
 
-    # @overrides
-    # def get_padding_lengths(self, token: int) -> Dict[str, int]:  # pylint: disable=unused-argument
-    #     return {}
+    @overrides(check_signature=False)
+    def as_padded_tensor_dict(
+        self, tokens: Dict[str, List[int]], padding_lengths: Dict[str, int]
+    ) -> Dict[str, List[int]]:  # pylint: disable=unused-argument
 
-    # @overrides
-    def as_padded_tensor_dict(self,
-                           tokens: Dict[str, List[int]],
-                           padding_lengths: Dict[str, int]) -> Dict[str, List[int]]:  # pylint: disable=unused-argument
-        
         tensor_dict = {}
         for key, val in tokens.items():
             tensor = torch.LongTensor(pad_sequence_to_length(val, padding_lengths[key]))
-            
+
             tensor_dict[key] = tensor
         return tensor_dict
-
-    # @overrides
-    def get_keys(self, index_name: str) -> List[str]:
-        """
-        We need to override this because the indexer generates multiple keys.
-        """
-        # pylint: disable=no-self-use
-        return [index_name, f"{index_name}-offsets", f"{index_name}-type-ids", "mask"]
 
 
 @TokenIndexer.register("gec-pretrained-bert-indexer")
@@ -127,29 +120,39 @@ class PretrainedBertIndexer(TokenizerIndexer):
         sliding window.
     """
 
-    def __init__(self,
-                 pretrained_model: str,
-                 do_lowercase: bool = True,
-                 max_pieces: int = 512,
-                 max_pieces_per_token: int = 5,
-                 special_tokens_fix: int = 0) -> None:
+    def __init__(
+        self,
+        pretrained_model: str,
+        do_lowercase: bool = True,
+        max_pieces: int = 512,
+        max_pieces_per_token: int = 5,
+        special_tokens_fix: int = 0,
+    ) -> None:
 
         if pretrained_model.endswith("-cased") and do_lowercase:
-            logger.warning("Your BERT model appears to be cased, "
-                           "but your indexer is lowercasing tokens.")
+            logger.warning(
+                "Your BERT model appears to be cased, "
+                "but your indexer is lowercasing tokens."
+            )
         elif pretrained_model.endswith("-uncased") and not do_lowercase:
-            logger.warning("Your BERT model appears to be uncased, "
-                           "but your indexer is not lowercasing tokens.")
+            logger.warning(
+                "Your BERT model appears to be uncased, "
+                "but your indexer is not lowercasing tokens."
+            )
 
         model_name = copy.deepcopy(pretrained_model)
 
         model_tokenizer = AutoTokenizer.from_pretrained(
-            model_name, do_lower_case=do_lowercase, do_basic_tokenize=False, use_fast=True)
+            model_name,
+            do_lower_case=do_lowercase,
+            do_basic_tokenize=False,
+            use_fast=True,
+        )
 
         # to adjust all tokenizers
-        if hasattr(model_tokenizer, 'encoder'):
+        if hasattr(model_tokenizer, "encoder"):
             model_tokenizer.vocab = model_tokenizer.encoder
-        if hasattr(model_tokenizer, 'sp_model'):
+        if hasattr(model_tokenizer, "sp_model"):
             model_tokenizer.vocab = defaultdict(lambda: 1)
             for i in range(model_tokenizer.sp_model.get_piece_size()):
                 model_tokenizer.vocab[model_tokenizer.sp_model.id_to_piece(i)] = i
@@ -158,8 +161,8 @@ class PretrainedBertIndexer(TokenizerIndexer):
             model_tokenizer.add_tokens([START_TOKEN])
             model_tokenizer.vocab[START_TOKEN] = len(model_tokenizer) - 1
 
-        super().__init__(tokenizer=model_tokenizer,
-                         max_pieces=max_pieces,
-                         max_pieces_per_token=max_pieces_per_token
-                        )
-
+        super().__init__(
+            tokenizer=model_tokenizer,
+            max_pieces=max_pieces,
+            max_pieces_per_token=max_pieces_per_token,
+        )
