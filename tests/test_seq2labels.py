@@ -2,15 +2,15 @@ import torch
 import numpy as np
 
 from allennlp.common.testing import ModelTestCase
-from allennlp.data.dataset import Batch
+from allennlp.data import Batch
 from allennlp.data.fields import TextField
 from allennlp.data.fields import MetadataField
-from allennlp.data.instance import Instance
-from allennlp.data import Token
-from allennlp.modules.text_field_embedders import BasicTextFieldEmbedder
-from allennlp.data.vocabulary import Vocabulary
 from allennlp.nn.util import move_to_device
+from allennlp.data import Instance
+from allennlp.data import Token
+from allennlp.data import Vocabulary
 
+from gector.basic_field_embedder import BasicTextFieldEmbedder
 from gector.bert_token_embedder import PretrainedBertEmbedder
 from gector.tokenizer_indexer import PretrainedBertIndexer
 from gector.seq2labels_model import Seq2Labels
@@ -19,10 +19,10 @@ from gector.seq2labels_model import Seq2Labels
 class TestSeq2Labels(ModelTestCase):
     """Test class for Seq2Labels model."""
 
-    def setUp(self):
+    def setup_method(self):
         """Set up indexers, embedders and dataset."""
 
-        super(TestSeq2Labels, self).setUp()
+        super(TestSeq2Labels, self).setup_method()
 
         vocab_path = "data/output_vocabulary"
         self.vocab = Vocabulary.from_files(vocab_path)
@@ -91,7 +91,7 @@ class TestSeq2Labels(ModelTestCase):
         ).to(self.device)
 
         output_dict = model(**training_tensors)
-        output_dict = model.decode(output_dict)
+        output_dict = model.make_output_human_readable(output_dict)
 
         assert set(output_dict.keys()) == set(
             [

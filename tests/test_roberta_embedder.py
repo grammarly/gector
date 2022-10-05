@@ -2,11 +2,12 @@ import torch
 import pytest
 
 from allennlp.common.testing import ModelTestCase
-from allennlp.data.dataset import Batch
+from allennlp.data import Batch
 from allennlp.data.fields import TextField
-from allennlp.data.instance import Instance
+from allennlp.data import Instance
 from allennlp.data import Token
-from allennlp.data.vocabulary import Vocabulary
+from allennlp.data import Vocabulary
+
 from gector.bert_token_embedder import PretrainedBertEmbedder
 from gector.tokenizer_indexer import PretrainedBertIndexer
 
@@ -14,10 +15,10 @@ from gector.tokenizer_indexer import PretrainedBertIndexer
 class TestRobertaEmbedder(ModelTestCase):
     """Test token embedder for RoBERTa model."""
 
-    def setUp(self):
+    def setup_method(self):
         """Set up indexer."""
 
-        super().setUp()
+        super().setup_method()
 
         vocab_path = "data/output_vocabulary"
         self.vocab = Vocabulary.from_files(vocab_path)
@@ -112,7 +113,7 @@ class TestRobertaEmbedder(ModelTestCase):
 
         padding_lengths = batch.get_padding_lengths()
         tensor_dict = batch.as_tensor_dict(padding_lengths)
-        tokens = tensor_dict["tokens"]
+        tokens = tensor_dict["tokens"]["bert"]
 
         assert tokens["bert"].tolist() == [
             [627, 29155, 2119, 6219, 23602, 4262, 81, 5, 22414, 2335, 0, 0],
@@ -187,7 +188,7 @@ class TestRobertaEmbedder(ModelTestCase):
 
         padding_lengths = batch.get_padding_lengths()
         tensor_dict = batch.as_tensor_dict(padding_lengths)
-        tokens = tensor_dict["tokens"]
+        tokens = tensor_dict["tokens"]["bert"]
         token_embedder(tokens["bert"], tokens["bert-offsets"])
 
     def test_max_length_raise_error(self):
@@ -212,6 +213,6 @@ class TestRobertaEmbedder(ModelTestCase):
 
         padding_lengths = batch.get_padding_lengths()
         tensor_dict = batch.as_tensor_dict(padding_lengths)
-        tokens = tensor_dict["tokens"]
+        tokens = tensor_dict["tokens"]["bert"]
         with pytest.raises(IndexError):
             token_embedder(tokens["bert"], tokens["bert-offsets"])
