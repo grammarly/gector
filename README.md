@@ -135,6 +135,7 @@ For evaluation use [EASSE](https://github.com/feralvam/easse) package.
 
 ## Noticeable works based on GECToR
 
+- Vanilla PyTorch implementation of GECToR with amp and distributed support by deepspeed [[code](https://github.com/Jason3900/gector-fast)]
 - Improving Sequence Tagging approach for Grammatical Error Correction task [[paper](https://s3.eu-central-1.amazonaws.com/ucu.edu.ua/wp-content/uploads/sites/8/2021/04/Improving-Sequence-Tagging-Approach-for-Grammatical-Error-Correction-Task-.pdf)][[code](https://github.com/MaksTarnavskyi/gector-large)]
 - LM-Critic: Language Models for Unsupervised Grammatical Error Correction [[paper](https://arxiv.org/pdf/2109.06822.pdf)][[code](https://github.com/michiyasunaga/LM-Critic)]
 
