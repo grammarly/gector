@@ -9,7 +9,9 @@ from utils.helpers import VOCAB_DIR, read_lines
 
 ORIG_FILE_DIR = Path(__file__).parent / "original"
 GOLD_FILE_DIR = Path(__file__).parent / "prediction"
+TEST_FIXTURES_DIR_PATH = Path(__file__).parent.parent / "test_fixtures"
 VOCAB_PATH = VOCAB_DIR.joinpath("output_vocabulary")
+MODEL_URL = "https://grammarly-nlp-data-public.s3.amazonaws.com/gector/roberta_1_gectorv2.th"
 
 
 def download_weights():
@@ -22,11 +24,9 @@ def download_weights():
         Path to model weights file
     """
 
-    model_url = "https://grammarly-nlp-data-public.s3.amazonaws.com/gector/roberta_1_gectorv2.th"
-    test_fixtures_dir_path = Path(__file__).parent.parent / "test_fixtures"
-    model_path = test_fixtures_dir_path / "roberta_1_gectorv2.th"
+    model_path = TEST_FIXTURES_DIR_PATH / "roberta_1_gectorv2.th"
     if not model_path.exists():
-        response = requests.get(model_url)
+        response = requests.get(MODEL_URL)
         with model_path.open("wb") as out_fp:
             # Write out data with progress bar
             for data in tqdm(response.iter_content()):
@@ -73,7 +73,7 @@ def predict_for_file(input_file, temp_file, model, batch_size=32):
         predictions.extend(preds)
         cnt_corrections += cnt
 
-    result_lines = [" ".join(x) for x in predictions]
+    result_lines = [" ".join(pred) for pred in predictions]
 
     with open(temp_file.name, "w") as f:
         f.write("\n".join(result_lines) + "\n")
@@ -103,7 +103,7 @@ def compare_files(filename, gold_file, temp_file):
 
 def predict_and_compare(model):
     """
-    Generate predictions for all test files and tests that there are no changes.
+    Generate predictions for all test files and test that there are no changes.
 
     Parameters
     ----------
@@ -113,7 +113,7 @@ def predict_and_compare(model):
 
     for child in ORIG_FILE_DIR.iterdir():
         if child.is_file():
-            input_file = str(ORIG_FILE_DIR.joinpath(child.name))
+            input_file = str(child.resolve())
             gold_standard_file = str(GOLD_FILE_DIR.joinpath(child.name))
             # Create temp file to store generated output
             with tempfile.NamedTemporaryFile() as temp_file:
