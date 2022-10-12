@@ -221,7 +221,7 @@ class Seq2Labels(Model):
         return output_dict
 
     def get_token_action(self, index, prob, sugg_token):
-        """Get lost of suggested actions for token."""
+        """Get list of suggested actions for token."""
         # cases when we don't need to do anything
         if prob < self.min_error_probability or sugg_token in [UNK, PAD, '$KEEP']:
             return None
@@ -241,6 +241,7 @@ class Seq2Labels(Model):
             sugg_token_clear = sugg_token[sugg_token.index('_') + 1:]
 
         return start_pos - 1, end_pos - 1, sugg_token_clear, prob
+    
     @overrides
     def get_metrics(self, reset: bool = False) -> Dict[str, float]:
         metrics_to_return = {metric_name: metric.get_metric(reset) for

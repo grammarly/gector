@@ -40,7 +40,7 @@ class GecBERTModel(object):
                  resolve_cycles=False,
                  ):
         """
-        Class used to enable prediction from GECtor model.
+        Class used to enable prediction from GECToR model.
 
         Parameters
         ----------

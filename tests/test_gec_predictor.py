@@ -46,7 +46,7 @@ class TestGecPredictor(ModelTestCase):
         self.model_path = model_path
         sentence1 = "I run to a stores every day."
         sentence2 = "the quick brown foxes jumps over a elmo's laziest friend"
-        # This micmics how batches of requests are constructed in predict.py's predict_for_file function
+        # This mimics how batches of requests are constructed in predict.py's predict_for_file function
         self.input_data = [sentence1, sentence2]
 
     def test_gec_predictor_prediction(self):

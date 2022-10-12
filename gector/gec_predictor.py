@@ -17,7 +17,7 @@ from utils.helpers import START_TOKEN
 @Predictor.register("gec-predictor")
 class GecPredictor(Predictor):
     """
-    A Predictor for generating predictions from GECtor.
+    A Predictor for generating predictions from GECToR.
 
     Note that currently, this is unable to handle ensemble predictions.
     """
@@ -62,6 +62,7 @@ class GecPredictor(Predictor):
                 corrected_instances.append(instance)
             instances = corrected_instances
         return sanitize(outputs)
+
     @overrides
     def _json_to_instance(self, json_dict: JsonDict) -> Instance:
         """
