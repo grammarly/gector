@@ -174,6 +174,46 @@ class Seq2Labels(Model):
         """
         Does a simple position-wise argmax over each token, converts indices to string labels, and
         adds a ``"tags"`` key to the dictionary with the result.
+
+        Parameters
+        ----------
+        output_dict: Dict[str, torch.Tensor]
+            This is expected to have the following keys:
+                - logits_labels
+                - logits_d_tags
+                - class_probabilities_labels
+                - class_probabilities_d_tags
+                - max_error_probability
+                - words
+
+        Returns
+        ------
+        Dict
+            A dictionary containing the following keys:
+                - logits_labels
+                    Logits for labels indicating the types of corrections
+                    to perform.
+                - logits_d_tags
+                    Logits for labels indicating the presence or absence
+                    of grammatical errors.
+                - class_probabilities_labels
+                    Class probabilities for labels indicating the types
+                    of corrections to perform.
+                - class_probabilities_d_tags
+                    Class probabilities for labels indicating the presence
+                    or absence of grammatical errors.
+                - max_error_probability
+                    A threshold probability that has to be exceeded for an
+                    error to be corrected.
+                - words
+                    The original tokens used to create the instance.
+                - labels
+                    Labels indicating the types of corrections to perform.
+                - d_tags
+                    Labels indicating the presence or absence of grammatical errors.
+                - corrected_words
+                    `words` after applying the correction operations
+                    specified in `labels`
         """
         for label_namespace in self.label_namespaces:
             all_predictions = output_dict[f'class_probabilities_{label_namespace}']
