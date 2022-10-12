@@ -59,7 +59,6 @@ def predict_for_file(input_file, temp_file, model, batch_size=32):
 
     test_data = read_lines(input_file)
     predictions = []
-    cnt_corrections = 0
     batch = []
     for sent in test_data:
         batch.append(sent.split())
@@ -71,14 +70,11 @@ def predict_for_file(input_file, temp_file, model, batch_size=32):
     if batch:
         preds, cnt = model.handle_batch(batch)
         predictions.extend(preds)
-        cnt_corrections += cnt
 
     result_lines = [" ".join(pred) for pred in predictions]
 
     with open(temp_file.name, "w") as f:
         f.write("\n".join(result_lines) + "\n")
-
-    return cnt_corrections
 
 
 def compare_files(filename, gold_file, temp_file):
