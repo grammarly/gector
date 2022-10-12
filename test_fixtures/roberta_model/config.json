@@ -33,6 +33,7 @@
     "model": {
         "type": "seq2labels",
         "text_field_embedder": {
+            "type": "legacy_text_field_embedder",
             "allow_unmatched_keys": true,
             "embedder_to_indexer_map": {"bert": ["bert", "bert-offsets"]},
             "token_embedders": {

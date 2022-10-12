@@ -12,7 +12,7 @@ from allennlp.modules.text_field_embedders.text_field_embedder import TextFieldE
 from allennlp.modules.time_distributed import TimeDistributed
 from allennlp.modules.token_embedders.token_embedder import TokenEmbedder
 
-
+@TextFieldEmbedder.register("legacy_text_field_embedder")
 class BasicTextFieldEmbedder(TextFieldEmbedder):
     """
     This is a ``TextFieldEmbedder`` that wraps a collection of :class:`TokenEmbedder` objects.  Each

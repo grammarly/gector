@@ -74,7 +74,7 @@ class Seq2LabelsDatasetReader(DatasetReader):
         self._tn_prob = tn_prob
         self._tp_prob = tp_prob
 
-    @overrides
+    @overrides(check_signature=False)
     def _read(self, file_path):
         # if `file_path` is a URL, redirect to the cache
         file_path = cached_path(file_path)
