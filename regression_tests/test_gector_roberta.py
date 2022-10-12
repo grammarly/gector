@@ -65,7 +65,6 @@ def predict_for_file(input_file, temp_file, model, batch_size=32):
         if len(batch) == batch_size:
             preds, cnt = model.handle_batch(batch)
             predictions.extend(preds)
-            cnt_corrections += cnt
             batch = []
     if batch:
         preds, cnt = model.handle_batch(batch)
