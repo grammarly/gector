@@ -5,7 +5,7 @@ from transformers import AutoTokenizer
 from allennlp.common.testing import AllenNlpTestCase
 
 
-class TokenizationTests(AllenNlpTestCase):
+class TestTokenization(AllenNlpTestCase):
     """A test class that tests the GECToR custom tokenization utilities."""
 
     def test_get_bpe_groups(self):
