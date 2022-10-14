@@ -5,11 +5,6 @@ from tqdm import tqdm
 
 from allennlp.common.testing import ModelTestCase
 from allennlp.predictors import Predictor
-from allennlp.modules.text_field_embedders import BasicTextFieldEmbedder
-from allennlp.data.vocabulary import Vocabulary
-from allennlp.data import Token
-from allennlp.data.instance import Instance
-from allennlp.data.fields import TextField
 
 from gector.gec_predictor import GecPredictor
 from gector.gec_model import GecBERTModel
@@ -17,6 +12,7 @@ from gector.bert_token_embedder import PretrainedBertEmbedder
 from gector.tokenizer_indexer import PretrainedBertIndexer
 
 # These imports are required so that instantiating the predictor can be done automatically
+from gector.basic_field_embedder import BasicTextFieldEmbedder
 from gector.datareader import Seq2LabelsDatasetReader
 from gector.seq2labels_model import Seq2Labels
 from gector.bert_token_embedder import PretrainedBertEmbedder
