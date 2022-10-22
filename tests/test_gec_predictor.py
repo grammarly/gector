@@ -11,6 +11,7 @@ from gector.datareader import Seq2LabelsDatasetReader
 from gector.seq2labels_model import Seq2Labels
 from gector.bert_token_embedder import PretrainedBertEmbedder
 from gector.tokenizer_indexer import PretrainedBertIndexer
+from gector.gec_predictor import GecPredictor
 
 
 class TestGecPredictor(ModelTestCase):
