@@ -55,19 +55,23 @@ class TestSeq2Labels(ModelTestCase):
 
         sentence1 = "the quickest quick brown fox jumped over the lazy dog"
         sentence1_words = [word for word in sentence1.split()]
-        tokens1 = [Token(word) for word in sentence1_words]
+        tokens1 = [Token(word) for word in ["$START"] + sentence1_words]
 
         sentence2 = "the quick brown fox jumped over the laziest lazy elmo"
         sentence2_words = [word for word in sentence2.split()]
-        tokens2 = [Token(word) for word in sentence2_words]
+        tokens2 = [Token(word) for word in ["$START"] + sentence2_words]
 
         instance1 = Instance(
-            {"tokens": TextField(tokens1, {"bert": token_indexer}),
-             "metadata": MetadataField({"words": sentence1_words})}
+            {
+                "tokens": TextField(tokens1, {"bert": token_indexer}),
+                "metadata": MetadataField({"words": sentence1_words}),
+            }
         )
         instance2 = Instance(
-            {"tokens": TextField(tokens2, {"bert": token_indexer}),
-             "metadata": MetadataField({"words": sentence2_words})}
+            {
+                "tokens": TextField(tokens2, {"bert": token_indexer}),
+                "metadata": MetadataField({"words": sentence2_words}),
+            }
         )
 
         self.batch = Batch([instance1, instance2])
@@ -99,9 +103,9 @@ class TestSeq2Labels(ModelTestCase):
                 "labels",
                 "d_tags",
                 "words",
-                "corrected_words"
+                "corrected_words",
             ]
         )
         probs = output_dict["class_probabilities_labels"][0].data.cpu().numpy()
 
-        np.testing.assert_almost_equal(np.sum(probs, -1), np.full((10), 1), 5)
+        np.testing.assert_almost_equal(np.sum(probs, -1), np.full((11), 1), 5)

@@ -310,7 +310,6 @@ class GecBERTModel(object):
             batch, all_probabilities, all_idxs, error_probs
         ):
             length = min(len(tokens), self.max_len)
-            print("batch_len", length, tokens)
             edits = []
 
             # skip whole sentences if there no errors
@@ -381,8 +380,6 @@ class GecBERTModel(object):
         # Run batch through model ``iterations`` times.
         for n_iter in range(self.iterations):
 
-            print("Iteration", n_iter)
-
             orig_batch = [final_batch[i] for i in pred_ids]
 
             # Batch converted to token indices
@@ -401,7 +398,6 @@ class GecBERTModel(object):
                 print(
                     f"Iteration {n_iter + 1}. Predicted {round(100*len(pred_ids)/batch_size, 1)}% of sentences."
                 )
-
             final_batch, pred_ids, cnt = self.update_final_batch(
                 final_batch, pred_ids, pred_batch, prev_preds_dict
             )

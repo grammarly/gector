@@ -26,7 +26,6 @@ from utils.helpers import read_lines
 ORIG_FILE_DIR = Path(__file__).parent / "original"
 GOLD_FILE_DIR = Path(__file__).parent / "prediction"
 TEST_FIXTURES_DIR_PATH = Path(__file__).parent.parent / "test_fixtures"
-# VOCAB_PATH = TEST_FIXTURES_DIR_PATH / "roberta_model" / "vocabulary"
 
 
 def download_weights():
@@ -82,21 +81,14 @@ def predict_for_file(input_file, temp_file, model, batch_size=32):
         if len(batch) == batch_size:
             preds = model.predict_batch(batch)
             preds_corrected_words = [x["corrected_words"] for x in preds]
-            # print(preds_corrected_words)
             predictions.extend(preds_corrected_words)
             batch = []
     if batch:
         preds = model.predict_batch(batch)
         preds_corrected_words = [x["corrected_words"] for x in preds]
-        # print(preds_corrected_words)
         predictions.extend(preds_corrected_words)
 
-    # print(predictions)
-
     result_lines = [" ".join(x) for x in predictions]
-
-    # with open("timetestpredictor_5iters.txt", "w") as f:
-    #     f.write("\n".join(result_lines) + "\n")
 
     with open(temp_file.name, "w") as f:
         f.write("\n".join(result_lines) + "\n")
@@ -152,20 +144,6 @@ def main():
 
     # Generate predictions and compare to previous output.
     predict_and_compare(model)
-    # with tempfile.NamedTemporaryFile() as temp_file:
-    #     predict_for_file(
-    #         str(ORIG_FILE_DIR.joinpath("conll14_10.txt")), temp_file, model
-    #     )
-    #     predict_for_file(
-    #         "/Users/skashyap/Work/local/temp/prepositions/ped/preposition_error_detection/test_pipeline/time_test.txt",
-    #         temp_file,
-    #         model,
-    #     )
-    #     # compare_files(
-    #     #     "conll14_10.txt",
-    #     #     str(GOLD_FILE_DIR.joinpath("conll14_10.txt")),
-    #     #     temp_file.name,
-    #     # )
 
 
 if __name__ == "__main__":

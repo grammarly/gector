@@ -164,9 +164,28 @@ class GecPredictor(Predictor):
             for id in range(len(final_batch))
         }
 
-        pred_ids = [id for id in range(len(instances))]
+        short_ids = [
+            id
+            for id in range(len(final_batch))
+            if len(final_batch[id].fields["tokens"].tokens) < 4
+        ]
 
-        for iter in range(self._iterations):
+        for id in short_ids:
+            final_outputs[id] = {
+                "logits_labels": None,
+                "logits_d_tags": None,
+                "class_probabilities_labels": None,
+                "class_probabilities_d_tags": None,
+                "max_error_probability": None,
+                "words": final_batch[id].fields["tokens"].tokens[1:],
+                "labels": None,
+                "d_tags": None,
+                "corrected_words": final_batch[id].fields["tokens"].tokens[1:],
+            }
+
+        pred_ids = [id for id in range(len(instances)) if id not in short_ids]
+
+        for n_iter in range(self._iterations):
 
             if len(pred_ids) == 0:
                 break

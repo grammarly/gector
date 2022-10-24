@@ -283,7 +283,7 @@ class Seq2Labels(Model):
         output_dict["corrected_words"] = []
         for i in range(batch_size):
             words_in_instance = output_dict["words"][i]
-            batch_len = len(words_in_instance)
+            batch_len = min(len(words_in_instance), 50)
             # Start of _convert
             probs = output_dict["class_probabilities_labels"][i]
             max_probs = torch.max(probs, dim=-1)
@@ -305,11 +305,11 @@ class Seq2Labels(Model):
 
             else:
                 actions_per_token = []
-                for j in range(batch_len):
+                for j in range(batch_len + 1):
                     if j == 0:
                         token = START_TOKEN
                     else:
-                        token = words_in_instance[j]
+                        token = words_in_instance[j - 1]
                     # skip if there is no op performed i.e. no error found
                     if indices[j] == NOOP_INDEX:
                         continue

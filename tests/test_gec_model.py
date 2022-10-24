@@ -56,7 +56,7 @@ class TestGecModel(ModelTestCase):
 
         sentence1 = "I run to a stores every day."
         sentence2 = "the quick brown foxes jumps over a elmo's laziest friend"
-        # This micmics how batches of requests are constructed in predict.py's predict_for_file function
+        # This mimics how batches of requests are constructed in predict.py's predict_for_file function
         input_data = [sentence1, sentence2]
         input_data = [sentence.split() for sentence in input_data]
         final_batch, total_updates = gec_model.handle_batch(input_data)
@@ -101,13 +101,21 @@ class TestGecModel(ModelTestCase):
         sentence2 = "therefore , in return , these people always hope to earn milionsof dollars every year ."
         sentence3 = "they all have worked hard to present people their best of the best ."
         sentence4 = "therefore , i think some famous althletes and entertainers earn millions of dollars every year is fair , they deserve it ."
+        sentence5 = "If a gene runs in the family , one of the family member test positive , whom does he need to tell ."
+        sentence6 = "And if you still decide to have the baby , since the technology has been developed so advanced , it might be possible in the future that the application of altering gene is perfected and widely used , you can then choose to give birth to babies by giving them a brighter future ."
 
-        input_data = [sentence1, sentence2, sentence3, sentence4]
+        input_data = [
+            sentence1,
+            sentence2,
+            sentence3,
+            sentence4,
+            sentence5,
+            sentence6,
+        ]
         # This micmics how batches of requests are constructed in predict.py's predict_for_file function
         input_data = [sentence.split() for sentence in input_data]
         final_batch, total_updates = gec_model.handle_batch(input_data)
-        # subject verb agreement is not fixed in the second sentence when predicting using GecModel
-        # (i.e.) brown foxes jump
+
         assert final_batch == [
             [
                 "On",
@@ -186,5 +194,83 @@ class TestGecModel(ModelTestCase):
                 "it",
                 ".",
             ],
+            [
+                "If",
+                "a",
+                "gene",
+                "runs",
+                "in",
+                "the",
+                "family",
+                ",",
+                "one",
+                "of",
+                "the",
+                "family",
+                "members",
+                "tests",
+                "positive",
+                ",",
+                "does",
+                "he",
+                "need",
+                "to",
+                "tell",
+                "?",
+            ],
+            [
+                "And",
+                "if",
+                "you",
+                "still",
+                "decide",
+                "to",
+                "have",
+                "a",
+                "baby",
+                ",",
+                "since",
+                "the",
+                "technology",
+                "has",
+                "been",
+                "developed",
+                ",",
+                "it",
+                "might",
+                "be",
+                "possible",
+                "in",
+                "the",
+                "future",
+                "that",
+                "the",
+                "application",
+                "of",
+                "altering",
+                "genes",
+                "be",
+                "perfected",
+                "and",
+                "widely",
+                "used",
+                ".",
+                "You",
+                "can",
+                "then",
+                "choose",
+                "to",
+                "give",
+                "birth",
+                "to",
+                "babies",
+                "by",
+                "giving",
+                "them",
+                "a",
+                "brighter",
+                "future",
+                ".",
+            ],
         ]
-        assert total_updates == 9
+        assert total_updates == 17

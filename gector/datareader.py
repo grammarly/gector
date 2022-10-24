@@ -150,7 +150,8 @@ class Seq2LabelsDatasetReader(DatasetReader):
         """
         # pylint: disable=arguments-differ
         fields: Dict[str, Field] = {}
-        sequence = TextField(tokens, self._token_indexers)
+        # Set size of tokens to _max_len + 1 since $START token is being added
+        sequence = TextField(tokens[: self._max_len + 1], self._token_indexers)
         fields["tokens"] = sequence
         # If words has not been explicitly passed in, create it from tokens.
         if words is None:
@@ -176,5 +177,4 @@ class Seq2LabelsDatasetReader(DatasetReader):
             fields["d_tags"] = SequenceLabelField(
                 detect_tags, sequence, label_namespace="d_tags"
             )
-        # print("fields", fields["tokens"])
         return Instance(fields)

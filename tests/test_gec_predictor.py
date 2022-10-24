@@ -86,8 +86,19 @@ class TestGecPredictor(ModelTestCase):
         sentence2 = "therefore , in return , these people always hope to earn milionsof dollars every year ."
         sentence3 = "they all have worked hard to present people their best of the best ."
         sentence4 = "therefore , i think some famous althletes and entertainers earn millions of dollars every year is fair , they deserve it ."
+        sentence5 = "If a gene runs in the family , one of the family member test positive , whom does he need to tell ."
+        sentence6 = "And if you still decide to have the baby , since the technology has been developed so advanced , it might be possible in the future that the application of altering gene is perfected and widely used , you can then choose to give birth to babies by giving them a brighter future ."
+        sentence7 = "cow tongue"
 
-        input_data = [sentence1, sentence2, sentence3, sentence4]
+        input_data = [
+            sentence1,
+            sentence2,
+            sentence3,
+            sentence4,
+            sentence5,
+            sentence6,
+            sentence7,
+        ]
 
         gec_model = Predictor.from_path(
             self.model_path,
@@ -107,9 +118,6 @@ class TestGecPredictor(ModelTestCase):
             "d_tags",
             "corrected_words",
         }
-
-        # print(prediction[3]["corrected_words"])
-
         assert prediction[0]["corrected_words"] == [
             "On",
             "TV",
@@ -186,4 +194,86 @@ class TestGecPredictor(ModelTestCase):
             "deserve",
             "it",
             ".",
+        ]
+        assert prediction[4]["corrected_words"] == [
+            "If",
+            "a",
+            "gene",
+            "runs",
+            "in",
+            "the",
+            "family",
+            ",",
+            "one",
+            "of",
+            "the",
+            "family",
+            "members",
+            "tests",
+            "positive",
+            ",",
+            "does",
+            "he",
+            "need",
+            "to",
+            "tell",
+            "?",
+        ]
+        assert prediction[5]["corrected_words"] == [
+            "And",
+            "if",
+            "you",
+            "still",
+            "decide",
+            "to",
+            "have",
+            "a",
+            "baby",
+            ",",
+            "since",
+            "the",
+            "technology",
+            "has",
+            "been",
+            "developed",
+            ",",
+            "it",
+            "might",
+            "be",
+            "possible",
+            "in",
+            "the",
+            "future",
+            "that",
+            "the",
+            "application",
+            "of",
+            "altering",
+            "genes",
+            "be",
+            "perfected",
+            "and",
+            "widely",
+            "used",
+            ".",
+            "You",
+            "can",
+            "then",
+            "choose",
+            "to",
+            "give",
+            "birth",
+            "to",
+            "babies",
+            "by",
+            "giving",
+            "them",
+            "a",
+            "brighter",
+            "future",
+            ".",
+        ]
+        assert prediction[6]["corrected_words"] == [
+            "cow",
+            "tongue",
         ]
