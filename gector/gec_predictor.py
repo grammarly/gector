@@ -105,6 +105,8 @@ class GecPredictor(Predictor):
 
         Parameters
         ---------
+        instance: Instance
+            Instance to be predicted
 
         Returns
         -------
@@ -137,6 +139,8 @@ class GecPredictor(Predictor):
 
         Parameters
         ----------
+        instances: List[Instance]
+            Instances to be predicted
 
         Returns
         -------
@@ -157,51 +161,70 @@ class GecPredictor(Predictor):
         # Make deep copy of batch
         final_batch = instances[:]
 
+        # Create list to store final predictions
         final_outputs = [None] * len(instances)
 
-        prev_preds_dict = {
-            id: [final_batch[id].fields["tokens"].tokens]
-            for id in range(len(final_batch))
-        }
+        # This dictionary keeps track of predictions made in every iteration
+        prev_preds_dict = {}
 
-        short_ids = [
-            id
-            for id in range(len(final_batch))
-            if len(final_batch[id].fields["tokens"].tokens) < 4
-        ]
+        # This list contains IDs of sentences to be passed into model
+        pred_ids = []
 
-        for id in short_ids:
-            final_outputs[id] = {
-                "logits_labels": None,
-                "logits_d_tags": None,
-                "class_probabilities_labels": None,
-                "class_probabilities_d_tags": None,
-                "max_error_probability": None,
-                "words": final_batch[id].fields["tokens"].tokens[1:],
-                "labels": None,
-                "d_tags": None,
-                "corrected_words": final_batch[id].fields["tokens"].tokens[1:],
-            }
+        # Populating `prev_preds_dict` and `pred_ids`
+        for id, instance in enumerate(final_batch):
+            prev_preds_dict[id] = [instance.fields["tokens"].tokens]
+            # If len(tokens) is less than 4 ($START + 3 tokens)
+            # we will not correct it.
+            # It is directly written to output.
+            if len(instance.fields["tokens"].tokens) < 4:
+                final_outputs[id] = {
+                    "logits_labels": None,
+                    "logits_d_tags": None,
+                    "class_probabilities_labels": None,
+                    "class_probabilities_d_tags": None,
+                    "max_error_probability": None,
+                    "words": instance.fields["tokens"].tokens[1:],
+                    "labels": None,
+                    "d_tags": None,
+                    "corrected_words": instance.fields["tokens"].tokens[1:],
+                }
+            else:
+                pred_ids.append(id)
 
-        pred_ids = [id for id in range(len(instances)) if id not in short_ids]
+        # Applying correction model multiple times
+        for _ in range(self._iterations):
 
-        for n_iter in range(self._iterations):
-
+            # If no sentences need to be passed into model
             if len(pred_ids) == 0:
                 break
 
+            # Create batch of instances to be passed into model
             orig_batch = [final_batch[pred_id] for pred_id in pred_ids]
+
+            # Pass into model
             outputs = self._model.forward_on_instances(orig_batch)
+
             new_pred_ids = []
+
+            # Output_ID and Pred_ID in pred_ids
             for op_ind, pred_id in enumerate(pred_ids):
+
+                # Update final outputs
                 final_outputs[pred_id] = outputs[op_ind]
                 orig = final_batch[pred_id]
+
+                # Create tokens from corrected words for next iter
                 tokens = [
                     Token(word)
                     for word in ["$START"] + outputs[op_ind]["corrected_words"]
                 ]
+
+                # Tokens to instance
                 pred = self._dataset_reader.text_to_instance(tokens)
                 prev_preds = prev_preds_dict[pred_id]
+
+                # If model output is different from previous iter outputs
+                # Update input batch, append to dict and add to `pred_ids`
                 if (
                     orig.fields["tokens"].tokens != pred.fields["tokens"].tokens
                     and pred.fields["tokens"].tokens not in prev_preds
@@ -214,6 +237,9 @@ class GecPredictor(Predictor):
                     prev_preds_dict[pred_id].append(
                         pred.fields["tokens"].tokens
                     )
+                # If model output is same as that in prev iter, update final batch
+                # but stop passing it into the model for future iters
+                # This means that no corrections have been made in this iteration
                 elif (
                     orig.fields["tokens"].tokens != pred.fields["tokens"].tokens
                     and pred.fields["tokens"].tokens in prev_preds
@@ -222,7 +248,10 @@ class GecPredictor(Predictor):
                     final_batch[pred_id] = pred
                 else:
                     continue
+
+            # Update `pred_ids` with new indices to be predicted
             pred_ids = new_pred_ids
+
         return sanitize(final_outputs)
 
     @overrides
