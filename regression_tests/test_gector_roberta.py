@@ -136,7 +136,7 @@ def main():
         confidence=0,
         del_confidence=0,
         is_ensemble=0,
-        weigths=None,
+        weights=None,
     )
 
     # Generate predictions and compare to previous output.

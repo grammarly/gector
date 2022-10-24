@@ -123,12 +123,7 @@ class GecPredictor(Predictor):
                 - corrected_words
             For an explanation of each of these see `Seq2Labels.decode()`.
         """
-        for i in range(self._iterations):
-            output = self._model.forward_on_instance(instance)
-            # integrate predictions back into instance for next iteration
-            tokens = [Token(word) for word in output["corrected_words"]]
-            instance = self._dataset_reader.text_to_instance(tokens)
-        return sanitize(output)
+        return self.predict_batch_instance([instance])[0]
 
     @overrides
     def predict_batch_instance(

@@ -51,7 +51,7 @@ class TestGecModel(ModelTestCase):
             confidence=0,
             del_confidence=0,
             is_ensemble=0,
-            weigths=None,
+            weights=None,
         )
 
         sentence1 = "I run to a stores every day."
@@ -94,7 +94,7 @@ class TestGecModel(ModelTestCase):
             confidence=0,
             del_confidence=0,
             is_ensemble=0,
-            weigths=None,
+            weights=None,
         )
 
         sentence1 = "everyday on tv , there are always the entertainers and athletes dedicating their effort and abilities to entertain audiences ."
@@ -112,7 +112,7 @@ class TestGecModel(ModelTestCase):
             sentence5,
             sentence6,
         ]
-        # This micmics how batches of requests are constructed in predict.py's predict_for_file function
+        # This mimics how batches of requests are constructed in predict.py's predict_for_file function
         input_data = [sentence.split() for sentence in input_data]
         final_batch, total_updates = gec_model.handle_batch(input_data)
 

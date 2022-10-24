@@ -32,12 +32,45 @@ class TestGecPredictor(ModelTestCase):
         model_path = test_fixtures_dir_path / "roberta_model"
         self.model_path = model_path
 
+    def test_gec_predictor_single_instance(self):
+        """Test simple prediction for single instance with GecPredictor"""
+
+        sentence1 = "I run to a stores every day."
+        input_data = sentence1
+
+        gec_model = Predictor.from_path(
+            self.model_path, predictor_name="gec-predictor"
+        )
+
+        prediction = gec_model.predict(input_data)
+
+        assert set(prediction.keys()) == {
+            "logits_labels",
+            "logits_d_tags",
+            "class_probabilities_labels",
+            "class_probabilities_d_tags",
+            "max_error_probability",
+            "words",
+            "labels",
+            "d_tags",
+            "corrected_words",
+        }
+        assert prediction["corrected_words"] == [
+            "I",
+            "run",
+            "to",
+            "the",
+            "stores",
+            "every",
+            "day.",
+        ]
+
     def test_gec_predictor_prediction(self):
         """Test simple prediction integration test with GecPredictor"""
 
         sentence1 = "I run to a stores every day."
         sentence2 = "the quick brown foxes jumps over a elmo's laziest friend"
-        # This micmics how batches of requests are constructed in predict.py's predict_for_file function
+        # This mimics how batches of requests are constructed in predict.py's predict_for_file function
         input_data = [sentence1, sentence2]
 
         gec_model = Predictor.from_path(
