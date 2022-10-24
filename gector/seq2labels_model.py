@@ -12,6 +12,7 @@ from allennlp.nn.util import get_text_field_mask, sequence_cross_entropy_with_lo
 from allennlp.training.metrics import CategoricalAccuracy
 from overrides import overrides
 from torch.nn.modules.linear import Linear
+from utils.helpers import PAD, UNK, get_target_sent_by_edits, START_TOKEN
 
 
 @Model.register("seq2labels")
@@ -60,6 +61,7 @@ class Seq2Labels(Model):
                  label_smoothing: float = 0.0,
                  confidence: float = 0.0,
                  del_confidence: float = 0.0,
+                 min_error_probability: float = 0.0,
                  initializer: InitializerApplicator = InitializerApplicator(),
                  regularizer: Optional[RegularizerApplicator] = None) -> None:
         super(Seq2Labels, self).__init__(vocab, regularizer)
@@ -72,6 +74,7 @@ class Seq2Labels(Model):
         self.label_smoothing = label_smoothing
         self.confidence = confidence
         self.del_conf = del_confidence
+        self.min_error_probability = min_error_probability
         self.incorr_index = self.vocab.get_token_index("INCORRECT",
                                                        namespace=detect_namespace)
 
@@ -161,7 +164,9 @@ class Seq2Labels(Model):
             output_dict["loss"] = loss_labels + loss_d
 
         if metadata is not None:
-            output_dict["words"] = [x["words"] for x in metadata]
+            output_dict["words"] = []
+            for instance in metadata:
+                output_dict["words"].append([word for word in instance["words"] if word != START_TOKEN])
         return output_dict
 
     @overrides
@@ -169,6 +174,46 @@ class Seq2Labels(Model):
         """
         Does a simple position-wise argmax over each token, converts indices to string labels, and
         adds a ``"tags"`` key to the dictionary with the result.
+
+        Parameters
+        ----------
+        output_dict: Dict[str, torch.Tensor]
+            This is expected to have the following keys:
+                - logits_labels
+                - logits_d_tags
+                - class_probabilities_labels
+                - class_probabilities_d_tags
+                - max_error_probability
+                - words
+
+        Returns
+        ------
+        Dict
+            A dictionary containing the following keys:
+                - logits_labels
+                    Logits for labels indicating the types of corrections
+                    to perform.
+                - logits_d_tags
+                    Logits for labels indicating the presence or absence
+                    of grammatical errors.
+                - class_probabilities_labels
+                    Class probabilities for labels indicating the types
+                    of corrections to perform.
+                - class_probabilities_d_tags
+                    Class probabilities for labels indicating the presence
+                    or absence of grammatical errors.
+                - max_error_probability
+                    A threshold probability that has to be exceeded for an
+                    error to be corrected.
+                - words
+                    The original tokens used to create the instance.
+                - labels
+                    Labels indicating the types of corrections to perform.
+                - d_tags
+                    Labels indicating the presence or absence of grammatical errors.
+                - corrected_words
+                    `words` after applying the correction operations
+                    specified in `labels`
         """
         for label_namespace in self.label_namespaces:
             all_predictions = output_dict[f'class_probabilities_{label_namespace}']
@@ -185,8 +230,58 @@ class Seq2Labels(Model):
                         for x in argmax_indices]
                 all_tags.append(tags)
             output_dict[f'{label_namespace}'] = all_tags
+        batch_size = len(output_dict['labels'])
+        output_dict['corrected_words'] = []
+        for i in range(batch_size):
+            words_in_instance = output_dict['words'][i]
+            batch_len = len(words_in_instance)
+            probs = output_dict['class_probabilities_labels'][i]
+            max_probs = torch.max(probs, dim=0)
+            probs = max_probs[0].tolist()
+            indices = max_probs[1].tolist()
+            if max(indices) == 0:  # No corrections should be performed
+                output_dict["corrected_words"].append(output_dict["words"][i])
+            else:
+                actions_per_token = []
+                for j in range(batch_len):
+                    if j == 0:
+                        token = START_TOKEN
+                    else:
+                        token = words_in_instance[j]
+                    if indices[j] == 0:
+                        continue
+                    suggested_token_operation = output_dict['labels'][i][j]
+                    action = self.get_token_action(index=j, prob=probs[j],
+                                                   sugg_token=suggested_token_operation)
+                    if not action:
+                        continue
+                    actions_per_token.append(action)
+                corrected_sent = get_target_sent_by_edits(output_dict['words'][i], actions_per_token)
+                output_dict['corrected_words'].append(corrected_sent)
         return output_dict
 
+    def get_token_action(self, index, prob, sugg_token):
+        """Get list of suggested actions for token."""
+        # cases when we don't need to do anything
+        if prob < self.min_error_probability or sugg_token in [UNK, PAD, '$KEEP']:
+            return None
+
+        if sugg_token.startswith('$REPLACE_') or sugg_token.startswith('$TRANSFORM_') or sugg_token == '$DELETE':
+            start_pos = index
+            end_pos = index + 1
+        elif sugg_token.startswith("$APPEND_") or sugg_token.startswith("$MERGE_"):
+            start_pos = index + 1
+            end_pos = index + 1
+
+        if sugg_token == "$DELETE":
+            sugg_token_clear = ""
+        elif sugg_token.startswith('$TRANSFORM_') or sugg_token.startswith("$MERGE_"):
+            sugg_token_clear = sugg_token[:]
+        else:
+            sugg_token_clear = sugg_token[sugg_token.index('_') + 1:]
+
+        return start_pos - 1, end_pos - 1, sugg_token_clear, prob
+    
     @overrides
     def get_metrics(self, reset: bool = False) -> Dict[str, float]:
         metrics_to_return = {metric_name: metric.get_metric(reset) for

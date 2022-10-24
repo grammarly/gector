@@ -133,3 +133,6 @@ dmypy.json
 .idea
 
 *.sh
+
+# pytorch weights files
+*.th

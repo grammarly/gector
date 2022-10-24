@@ -129,6 +129,9 @@ class Seq2LabelsDatasetReader(DatasetReader):
         fields: Dict[str, Field] = {}
         sequence = TextField(tokens, self._token_indexers)
         fields["tokens"] = sequence
+        # If words has not been explicitly passed in, create it from tokens.
+        if words is None:
+            words = [token.text for token in tokens]
         fields["metadata"] = MetadataField({"words": words})
         if tags is not None:
             labels, detect_tags, complex_flag_dict = self.extract_tags(tags)

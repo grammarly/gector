@@ -39,6 +39,28 @@ class GecBERTModel(object):
                  del_confidence=0,
                  resolve_cycles=False,
                  ):
+        """
+        Class used to enable prediction from GECToR model.
+
+        Parameters
+        ----------
+        vocab_path
+        model_paths: List[Path]
+        weigths
+        max_len
+        min_len
+        lowercase_tokens
+        log
+        iterations
+        model_name
+        special_tokens_fix
+        is_ensemble
+        min_error_probability
+        confidence
+        del_confidence
+        resolve_cycles: bool
+            This parameter is unused.
+        """
         self.model_weights = list(map(float, weigths)) if weigths else [1] * len(model_paths)
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.max_len = max_len
