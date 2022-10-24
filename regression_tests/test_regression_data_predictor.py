@@ -2,16 +2,30 @@ import filecmp
 from pathlib import Path
 import requests
 import tempfile
+import torch
 from tqdm import tqdm
 
-from gector.gec_model import GecBERTModel
-from utils.helpers import VOCAB_DIR, read_lines
+from allennlp.common.testing import ModelTestCase
+from allennlp.predictors import Predictor
+from allennlp.modules.text_field_embedders import BasicTextFieldEmbedder
+from allennlp.data.vocabulary import Vocabulary
+from allennlp.data import Token
+from allennlp.data.instance import Instance
+from allennlp.data.fields import TextField
+from allennlp.data.dataset import Batch
+
+from gector.gec_predictor import GecPredictor
+
+# These imports are required so that instantiating the predictor can be done automatically
+from gector.datareader import Seq2LabelsDatasetReader
+from gector.seq2labels_model import Seq2Labels
+from gector.bert_token_embedder import PretrainedBertEmbedder
+from gector.tokenizer_indexer import PretrainedBertIndexer
+from utils.helpers import read_lines
 
 ORIG_FILE_DIR = Path(__file__).parent / "original"
 GOLD_FILE_DIR = Path(__file__).parent / "prediction"
 TEST_FIXTURES_DIR_PATH = Path(__file__).parent.parent / "test_fixtures"
-VOCAB_PATH = VOCAB_DIR.joinpath("output_vocabulary")
-MODEL_URL = "https://grammarly-nlp-data-public.s3.amazonaws.com/gector/roberta_1_gectorv2.th"
 
 
 def download_weights():
@@ -21,17 +35,19 @@ def download_weights():
     Returns
     -------
     Path
-        Path to model weights file
+        Path to model directory
     """
 
-    model_path = TEST_FIXTURES_DIR_PATH / "roberta_1_gectorv2.th"
+    # Download weights for model archive
+    weights_url = "https://grammarly-nlp-data-public.s3.amazonaws.com/gector/roberta_1_gectorv2.th"
+    model_path = TEST_FIXTURES_DIR_PATH / "roberta_model" / "weights.th"
     if not model_path.exists():
-        response = requests.get(MODEL_URL)
+        response = requests.get(weights_url)
         with model_path.open("wb") as out_fp:
             # Write out data with progress bar
             for data in tqdm(response.iter_content()):
                 out_fp.write(data)
-    assert model_path.exists()
+    model_path = TEST_FIXTURES_DIR_PATH / "roberta_model"
 
     return model_path
 
@@ -61,16 +77,18 @@ def predict_for_file(input_file, temp_file, model, batch_size=32):
     predictions = []
     batch = []
     for sent in test_data:
-        batch.append(sent.split())
+        batch.append(sent)
         if len(batch) == batch_size:
-            preds, cnt = model.handle_batch(batch)
-            predictions.extend(preds)
+            preds = model.predict_batch(batch)
+            preds_corrected_words = [x["corrected_words"] for x in preds]
+            predictions.extend(preds_corrected_words)
             batch = []
     if batch:
-        preds, cnt = model.handle_batch(batch)
-        predictions.extend(preds)
+        preds = model.predict_batch(batch)
+        preds_corrected_words = [x["corrected_words"] for x in preds]
+        predictions.extend(preds_corrected_words)
 
-    result_lines = [" ".join(pred) for pred in predictions]
+    result_lines = [" ".join(x) for x in predictions]
 
     with open(temp_file.name, "w") as f:
         f.write("\n".join(result_lines) + "\n")
@@ -98,17 +116,17 @@ def compare_files(filename, gold_file, temp_file):
 
 def predict_and_compare(model):
     """
-    Generate predictions for all test files and test that there are no changes.
+    Generate predictions for all test files and tests that there are no changes.
 
     Parameters
     ----------
-    model : GecBERTModel
+    model : Predictor
         Initialized model
     """
 
     for child in ORIG_FILE_DIR.iterdir():
         if child.is_file():
-            input_file = str(child.resolve())
+            input_file = str(ORIG_FILE_DIR.joinpath(child.name))
             gold_standard_file = str(GOLD_FILE_DIR.joinpath(child.name))
             # Create temp file to store generated output
             with tempfile.NamedTemporaryFile() as temp_file:
@@ -122,22 +140,7 @@ def main():
     model_path = download_weights()
 
     # Initialize model
-    model = GecBERTModel(
-        vocab_path=VOCAB_PATH,
-        model_paths=[model_path],
-        max_len=50,
-        min_len=3,
-        iterations=5,
-        min_error_probability=0.0,
-        lowercase_tokens=0,
-        model_name="roberta",
-        special_tokens_fix=1,
-        log=False,
-        confidence=0,
-        del_confidence=0,
-        is_ensemble=0,
-        weights=None,
-    )
+    model = Predictor.from_path(model_path, predictor_name="gec-predictor")
 
     # Generate predictions and compare to previous output.
     predict_and_compare(model)

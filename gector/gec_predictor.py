@@ -9,7 +9,14 @@ from allennlp.common.util import JsonDict
 from allennlp.data import DatasetReader, Instance, Token
 from allennlp.data.tokenizers.word_splitter import JustSpacesWordSplitter
 from allennlp.models import Model
+
 from utils.helpers import START_TOKEN
+import torch
+from allennlp.nn import util
+from allennlp.data.dataset import Batch
+from allennlp.data.fields import TextField
+from allennlp.data.instance import Instance
+from allennlp.data.tokenizers import Token
 
 
 @Predictor.register("gec-predictor")
@@ -20,10 +27,9 @@ class GecPredictor(Predictor):
     Note that currently, this is unable to handle ensemble predictions.
     """
 
-    def __init__(self,
-                 model: Model,
-                 dataset_reader: DatasetReader,
-                 iterations: int = 3) -> None:
+    def __init__(
+        self, model: Model, dataset_reader: DatasetReader, iterations: int = 5
+    ) -> None:
         """
         Parameters
         ---------
@@ -88,7 +94,9 @@ class GecPredictor(Predictor):
                 - corrected_words
             For an explanation of each of these see `Seq2Labels.decode()`.
         """
-        return self.predict_batch_json([{"sentence": sentence} for sentence in sentences])
+        return self.predict_batch_json(
+            [{"sentence": sentence} for sentence in sentences]
+        )
 
     @overrides
     def predict_instance(self, instance: Instance) -> JsonDict:
@@ -97,6 +105,8 @@ class GecPredictor(Predictor):
 
         Parameters
         ---------
+        instance: Instance
+            Instance to be predicted
 
         Returns
         -------
@@ -113,20 +123,19 @@ class GecPredictor(Predictor):
                 - corrected_words
             For an explanation of each of these see `Seq2Labels.decode()`.
         """
-        for i in range(self._iterations):
-            output = self._model.forward_on_instance(instance)
-            # integrate predictions back into instance for next iteration
-            tokens = [Token(word) for word in output["corrected_words"]]
-            instance = self._dataset_reader.text_to_instance(tokens)
-        return sanitize(output)
+        return self.predict_batch_instance([instance])[0]
 
     @overrides
-    def predict_batch_instance(self, instances: List[Instance]) -> List[JsonDict]:
+    def predict_batch_instance(
+        self, instances: List[Instance]
+    ) -> List[JsonDict]:
         """
         This special predict_batch_instance method allows for applying the correction model multiple times.
 
         Parameters
         ----------
+        instances: List[Instance]
+            Instances to be predicted
 
         Returns
         -------
@@ -143,15 +152,102 @@ class GecPredictor(Predictor):
                 - corrected_words
             For an explanation of each of these see `Seq2Labels.decode()`.
         """
-        for i in range(self._iterations):
-            outputs = self._model.forward_on_instances(instances)
-            corrected_instances = []
-            for output in outputs:
-                tokens = [Token(word) for word in output["corrected_words"]]
-                instance = self._dataset_reader.text_to_instance(tokens)
-                corrected_instances.append(instance)
-            instances = corrected_instances
-        return sanitize(outputs)
+
+        # Make deep copy of batch
+        final_batch = instances[:]
+
+        # Create list to store final predictions
+        final_outputs = [None] * len(instances)
+
+        # This dictionary keeps track of predictions made in every iteration
+        prev_preds_dict = {}
+
+        # This list contains IDs of sentences to be passed into model
+        pred_ids = []
+
+        # Populating `prev_preds_dict` and `pred_ids`
+        for id, instance in enumerate(final_batch):
+            prev_preds_dict[id] = [instance.fields["tokens"].tokens]
+            # If len(tokens) is less than 4 ($START + 3 tokens)
+            # we will not correct it.
+            # It is directly written to output.
+            if len(instance.fields["tokens"].tokens) < 4:
+                final_outputs[id] = {
+                    "logits_labels": None,
+                    "logits_d_tags": None,
+                    "class_probabilities_labels": None,
+                    "class_probabilities_d_tags": None,
+                    "max_error_probability": None,
+                    "words": instance.fields["tokens"].tokens[1:],
+                    "labels": None,
+                    "d_tags": None,
+                    "corrected_words": instance.fields["tokens"].tokens[1:],
+                }
+            else:
+                pred_ids.append(id)
+
+        # Applying correction model multiple times
+        for _ in range(self._iterations):
+
+            # If no sentences need to be passed into model
+            if len(pred_ids) == 0:
+                break
+
+            # Create batch of instances to be passed into model
+            orig_batch = [final_batch[pred_id] for pred_id in pred_ids]
+
+            # Pass into model
+            outputs = self._model.forward_on_instances(orig_batch)
+
+            new_pred_ids = []
+
+            # Output_ID and Pred_ID in pred_ids
+            for op_ind, pred_id in enumerate(pred_ids):
+
+                # Update final outputs
+                final_outputs[pred_id] = outputs[op_ind]
+                orig = final_batch[pred_id]
+
+                # Create tokens from corrected words for next iter
+                tokens = [
+                    Token(word)
+                    for word in ["$START"] + outputs[op_ind]["corrected_words"]
+                ]
+
+                # Tokens to instance
+                pred = self._dataset_reader.text_to_instance(tokens)
+                prev_preds = prev_preds_dict[pred_id]
+
+                # If model output is different from previous iter outputs
+                # Update input batch, append to dict and add to `pred_ids`
+                if (
+                    orig.fields["tokens"].tokens != pred.fields["tokens"].tokens
+                    and pred.fields["tokens"].tokens not in prev_preds
+                ):
+                    # Set sentence instance to predicted sent in batch
+                    final_batch[pred_id] = pred
+                    # Append orig_id in new_pred_ids
+                    new_pred_ids.append(pred_id)
+                    # Append new prediction to prev_preds_dict
+                    prev_preds_dict[pred_id].append(
+                        pred.fields["tokens"].tokens
+                    )
+                # If model output is same as that in prev iter, update final batch
+                # but stop passing it into the model for future iters
+                # This means that no corrections have been made in this iteration
+                elif (
+                    orig.fields["tokens"].tokens != pred.fields["tokens"].tokens
+                    and pred.fields["tokens"].tokens in prev_preds
+                ):
+                    # update final batch, but stop iterations
+                    final_batch[pred_id] = pred
+                else:
+                    continue
+
+            # Update `pred_ids` with new indices to be predicted
+            pred_ids = new_pred_ids
+
+        return sanitize(final_outputs)
 
     @overrides
     def _json_to_instance(self, json_dict: JsonDict) -> Instance:
