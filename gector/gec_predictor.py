@@ -12,12 +12,6 @@ from allennlp.data.tokenizers import WhitespaceTokenizer
 from allennlp.models import Model
 
 from utils.helpers import START_TOKEN
-import torch
-from allennlp.nn import util
-from allennlp.data.dataset import Batch
-from allennlp.data.fields import TextField
-from allennlp.data.instance import Instance
-from allennlp.data.tokenizers import Token
 
 
 @Predictor.register("gec-predictor")
