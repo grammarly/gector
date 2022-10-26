@@ -101,6 +101,7 @@ class TokenizerIndexer(TokenIndexer[int]):
         return [index_name, f"{index_name}-offsets", f"{index_name}-type-ids", "mask"]
 
 
+@TokenIndexer.register("gec-pretrained-bert-indexer")
 class PretrainedBertIndexer(TokenizerIndexer):
     # pylint: disable=line-too-long
     """

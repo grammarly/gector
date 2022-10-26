@@ -221,7 +221,7 @@ class BertEmbedder(TokenEmbedder):
             return util.uncombine_initial_dims(selected_embeddings, offsets.size())
 
 
-# @TokenEmbedder.register("bert-pretrained")
+@TokenEmbedder.register("gec-bert-pretrained")
 class PretrainedBertEmbedder(BertEmbedder):
 
     """
