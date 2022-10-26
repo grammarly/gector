@@ -14,11 +14,21 @@ conda create --name <Environment_name> python=3.8
 conda activate <Environment_name> 
 pip install -e .
 ```
-The project was tested using Python 3.8.
+The project was tested using Python 3.8, 3.9 and 3.10.
 
 ## Unit tests
 After activating the conda environment, simply run the code below: 
 `pytest -v tests`
+
+## Regression tests
+The `regression_tests` folder contains two tests: `test_gector_roberta` and
+`test_regression_data_predictor`. The first test uses the `GecBERTModel` from
+the original GECToR, while the second test leverages the `predictor` module
+from `AllenNLP`. How to run:
+```.bash
+python regression_tests/test_gector_roberta.py
+python regression_tests/test_regression_data_predictor.py
+```
 
 ## Datasets
 All the public GEC datasets used in the paper can be downloaded from [here](https://www.cl.cam.ac.uk/research/nl/bea2019st/#data).<br>
