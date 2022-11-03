@@ -35,7 +35,7 @@ All the public GEC datasets used in the paper can be downloaded from [here](http
 Synthetically created datasets can be generated/downloaded [here](https://github.com/awasthiabhijeet/PIE/tree/master/errorify).<br>
 To train the model data has to be preprocessed and converted to special format with the command:
 ```.bash
-python utils/preprocess_data.py -s SOURCE -t TARGET -o OUTPUT_FILE
+python gector/utils/preprocess_data.py -s SOURCE -t TARGET -o OUTPUT_FILE
 ```
 ## Pretrained models
 <table>
@@ -110,7 +110,7 @@ This repository also implements the code of the following paper:
 > Grammarly <br>
 > [16th Workshop on Innovative Use of NLP for Building Educational Applications (co-located w EACL 2021)](https://sig-edu.org/bea/current) <br>
 
-For data preprocessing, training and testing the same interface as for GEC could be used. For both training and evaluation stages `utils/filter_brackets.py` is used to remove noise. During inference, we use `--normalize` flag.
+For data preprocessing, training and testing the same interface as for GEC could be used. For both training and evaluation stages `gector/utils/filter_brackets.py` is used to remove noise. During inference, we use `--normalize` flag.
 
 <table>
   <tr>

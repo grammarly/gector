@@ -15,7 +15,7 @@ from allennlp.nn.util import (
 from allennlp.training.metrics import CategoricalAccuracy
 from overrides import overrides
 from torch.nn.modules.linear import Linear
-from utils.helpers import PAD, UNK, get_target_sent_by_edits, START_TOKEN
+from gector.utils.helpers import PAD, UNK, get_target_sent_by_edits, START_TOKEN
 
 NOOP_INDEX = 0
 

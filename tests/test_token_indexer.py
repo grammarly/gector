@@ -15,7 +15,7 @@ class TestPretrainedTransformerIndexer(ModelTestCase):
         super().setup_method()
 
         sentence = "the Quick brown fox jumped over the laziest lazy elmo"
-        vocab_path = "data/output_vocabulary"
+        vocab_path = "test_fixtures/roberta_model/vocabulary"
         self.tokens = [Token(word) for word in sentence.split()]
         self.vocab = Vocabulary.from_files(vocab_path)
         self.model_name = "roberta-base"

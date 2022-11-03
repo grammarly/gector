@@ -16,8 +16,8 @@ from allennlp.nn import util
 from gector.bert_token_embedder import PretrainedBertEmbedder
 from gector.seq2labels_model import Seq2Labels
 from gector.tokenizer_indexer import PretrainedBertIndexer
-from utils.helpers import PAD, UNK, get_target_sent_by_edits, START_TOKEN
-from utils.helpers import get_weights_name
+from gector.utils.helpers import PAD, UNK, get_target_sent_by_edits, START_TOKEN
+from gector.utils.helpers import get_weights_name
 
 logging.getLogger("werkzeug").setLevel(logging.ERROR)
 logger = logging.getLogger(__file__)
@@ -207,7 +207,8 @@ class GecBERTModel(object):
                 special_tokens_fix=special_tokens_fix,
             )
         }
-        text_field_embedder = BasicTextFieldEmbedder(token_embedders=embedders, 
+        text_field_embedder = BasicTextFieldEmbedder(
+            token_embedders=embedders,
             embedder_to_indexer_map={"bert": ["bert", "bert-offsets"]},
             allow_unmatched_keys=True,
         )

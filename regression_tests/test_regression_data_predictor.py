@@ -21,7 +21,7 @@ from gector.datareader import Seq2LabelsDatasetReader
 from gector.seq2labels_model import Seq2Labels
 from gector.bert_token_embedder import PretrainedBertEmbedder
 from gector.tokenizer_indexer import PretrainedBertIndexer
-from utils.helpers import read_lines
+from gector.utils.helpers import read_lines
 
 ORIG_FILE_DIR = Path(__file__).parent / "original"
 GOLD_FILE_DIR = Path(__file__).parent / "prediction"

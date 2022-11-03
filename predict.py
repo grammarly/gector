@@ -1,6 +1,6 @@
 import argparse
 
-from utils.helpers import read_lines, normalize
+from gector.utils.helpers import read_lines, normalize
 from gector.gec_model import GecBERTModel
 
 

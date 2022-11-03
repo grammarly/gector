@@ -20,7 +20,7 @@ class TestRobertaEmbedder(ModelTestCase):
 
         super().setup_method()
 
-        vocab_path = "data/output_vocabulary"
+        vocab_path = "test_fixtures/roberta_model/vocabulary"
         self.vocab = Vocabulary.from_files(vocab_path)
         self.model_name = "roberta-base"
         self.token_indexer = PretrainedBertIndexer(

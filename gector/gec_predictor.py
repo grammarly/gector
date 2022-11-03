@@ -11,7 +11,7 @@ from allennlp.data.fields import TextField, SequenceLabelField
 from allennlp.data.tokenizers import WhitespaceTokenizer 
 from allennlp.models import Model
 
-from utils.helpers import START_TOKEN
+from gector.utils.helpers import START_TOKEN
 
 
 @Predictor.register("gec-predictor")

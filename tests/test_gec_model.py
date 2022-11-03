@@ -21,7 +21,7 @@ class TestGecModel(ModelTestCase):
 
     def setup_method(self):
         super().setup_method()
-        self.vocab_path = "data/output_vocabulary"
+        self.vocab_path = "test_fixtures/roberta_model/vocabulary"
         self.vocab = Vocabulary.from_files(self.vocab_path)
         self.model_name = "roberta-base"
         model_url = "https://grammarly-nlp-data-public.s3.amazonaws.com/gector/roberta_1_gectorv2.th"

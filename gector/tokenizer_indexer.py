@@ -11,7 +11,7 @@ from allennlp.data import Vocabulary
 from overrides import overrides
 from transformers import AutoTokenizer
 
-from utils.helpers import START_TOKEN
+from gector.utils.helpers import START_TOKEN
 
 from gector.tokenization import tokenize_batch
 import copy
@@ -77,7 +77,9 @@ class TokenizerIndexer(TokenIndexer):
         return output_fast
 
     @overrides
-    def count_vocab_items(self, token: Token, counter: Dict[str, Dict[str, int]]):
+    def count_vocab_items(
+        self, token: Token, counter: Dict[str, Dict[str, int]]
+    ):
         # If we only use pretrained models, we don't need to do anything here.
         pass
 
@@ -91,7 +93,9 @@ class TokenizerIndexer(TokenIndexer):
 
         tensor_dict = {}
         for key, val in tokens.items():
-            tensor = torch.LongTensor(pad_sequence_to_length(val, padding_lengths[key]))
+            tensor = torch.LongTensor(
+                pad_sequence_to_length(val, padding_lengths[key])
+            )
 
             tensor_dict[key] = tensor
         return tensor_dict
@@ -155,7 +159,9 @@ class PretrainedBertIndexer(TokenizerIndexer):
         if hasattr(model_tokenizer, "sp_model"):
             model_tokenizer.vocab = defaultdict(lambda: 1)
             for i in range(model_tokenizer.sp_model.get_piece_size()):
-                model_tokenizer.vocab[model_tokenizer.sp_model.id_to_piece(i)] = i
+                model_tokenizer.vocab[
+                    model_tokenizer.sp_model.id_to_piece(i)
+                ] = i
 
         if special_tokens_fix:
             model_tokenizer.add_tokens([START_TOKEN])

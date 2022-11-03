@@ -5,7 +5,7 @@ import tempfile
 from tqdm import tqdm
 
 from gector.gec_model import GecBERTModel
-from utils.helpers import VOCAB_DIR, read_lines
+from gector.utils.helpers import VOCAB_DIR, read_lines
 
 ORIG_FILE_DIR = Path(__file__).parent / "original"
 GOLD_FILE_DIR = Path(__file__).parent / "prediction"
