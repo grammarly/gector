@@ -5,12 +5,12 @@ import tempfile
 from tqdm import tqdm
 
 from gector.gec_model import GecBERTModel
-from gector.utils.helpers import VOCAB_DIR, read_lines
+from gector.utils.helpers import read_lines
 
 ORIG_FILE_DIR = Path(__file__).parent / "original"
 GOLD_FILE_DIR = Path(__file__).parent / "prediction"
 TEST_FIXTURES_DIR_PATH = Path(__file__).parent.parent / "test_fixtures"
-VOCAB_PATH = VOCAB_DIR.joinpath("output_vocabulary")
+VOCAB_PATH = TEST_FIXTURES_DIR_PATH.joinpath("roberta_model/vocabulary")
 MODEL_URL = "https://grammarly-nlp-data-public.s3.amazonaws.com/gector/roberta_1_gectorv2.th"
 
 
@@ -24,7 +24,7 @@ def download_weights():
         Path to model weights file
     """
 
-    model_path = TEST_FIXTURES_DIR_PATH / "roberta_1_gectorv2.th"
+    model_path = TEST_FIXTURES_DIR_PATH / "roberta_model" / "weights.th"
     if not model_path.exists():
         response = requests.get(MODEL_URL)
         with model_path.open("wb") as out_fp:
