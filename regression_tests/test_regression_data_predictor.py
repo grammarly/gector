@@ -5,7 +5,6 @@ import tempfile
 import torch
 from tqdm import tqdm
 
-from allennlp.common.testing import ModelTestCase
 from allennlp.predictors import Predictor
 from allennlp.data.vocabulary import Vocabulary
 from allennlp.data import Token
