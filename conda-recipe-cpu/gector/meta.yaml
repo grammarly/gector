@@ -19,7 +19,7 @@ requirements:
     - python>=3.8
   run:
     - python>=3.8
-    - allennlp
+    - allennlp>=2.9
     - pytorch-cpu
     - python-Levenshtein
     - scikit-learn
