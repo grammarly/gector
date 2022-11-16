@@ -9,17 +9,33 @@ This repository provides code for training and testing state-of-the-art models f
 It is mainly based on `AllenNLP` and `transformers`.
 ## Installation
 The following command installs all necessary packages:
-```.bash
-pip install -r requirements.txt
+```bash
+conda create --name <Environment_name> python=3.8
+conda activate <Environment_name> 
+pip install -e .
 ```
-The project was tested using Python 3.7.
+The project was tested using Python 3.8, 3.9 and 3.10.
+
+## Unit tests
+After activating the conda environment, simply run the code below: 
+`pytest -v tests`
+
+## Regression tests
+The `regression_tests` folder contains two tests: `test_gector_roberta` and
+`test_regression_data_predictor`. The first test uses the `GecBERTModel` from
+the original GECToR, while the second test leverages the `predictor` module
+from `AllenNLP`. How to run:
+```.bash
+python regression_tests/test_gector_roberta.py
+python regression_tests/test_regression_data_predictor.py
+```
 
 ## Datasets
 All the public GEC datasets used in the paper can be downloaded from [here](https://www.cl.cam.ac.uk/research/nl/bea2019st/#data).<br>
 Synthetically created datasets can be generated/downloaded [here](https://github.com/awasthiabhijeet/PIE/tree/master/errorify).<br>
 To train the model data has to be preprocessed and converted to special format with the command:
 ```.bash
-python utils/preprocess_data.py -s SOURCE -t TARGET -o OUTPUT_FILE
+python gector/utils/preprocess_data.py -s SOURCE -t TARGET -o OUTPUT_FILE
 ```
 ## Pretrained models
 <table>
@@ -94,7 +110,7 @@ This repository also implements the code of the following paper:
 > Grammarly <br>
 > [16th Workshop on Innovative Use of NLP for Building Educational Applications (co-located w EACL 2021)](https://sig-edu.org/bea/current) <br>
 
-For data preprocessing, training and testing the same interface as for GEC could be used. For both training and evaluation stages `utils/filter_brackets.py` is used to remove noise. During inference, we use `--normalize` flag.
+For data preprocessing, training and testing the same interface as for GEC could be used. For both training and evaluation stages `gector/utils/filter_brackets.py` is used to remove noise. During inference, we use `--normalize` flag.
 
 <table>
   <tr>

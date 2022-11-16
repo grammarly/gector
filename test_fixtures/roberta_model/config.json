@@ -1,0 +1,62 @@
+{
+    "dataset_reader": {
+        "type": "seq2labels_datareader",
+        "max_len": 50,
+        "skip_correct": true,
+        "skip_complex": 0,
+        "test_mode": false,
+        "tag_strategy": "keep_one",
+        "broken_dot_strategy": "keep",
+        "lazy": true,
+        "tn_prob": 0,
+        "tp_prob": 1,
+        "token_indexers": {
+           "bert": {
+               "type": "gec-pretrained-bert-indexer",
+               "pretrained_model": "roberta-base",
+               "max_pieces_per_token": 5,
+               "do_lowercase": false,
+               "special_tokens_fix": 1
+           }
+        }
+    },
+    "iterator": {
+        "type": "bucket",
+        "batch_size": 32,
+        "sorting_keys": [
+            [
+                "tokens",
+                "num_tokens"
+            ]
+        ]
+    },
+    "model": {
+        "type": "seq2labels",
+        "text_field_embedder": {
+            "type": "legacy_text_field_embedder",
+            "allow_unmatched_keys": true,
+            "embedder_to_indexer_map": {"bert": ["bert", "bert-offsets"]},
+            "token_embedders": {
+                "bert": {
+                    "type": "gec-bert-pretrained",
+                    "requires_grad": false,
+                    "top_layer_only": true,
+                    "pretrained_model": "roberta-base",
+                    "special_tokens_fix": 1
+                }
+            }
+        }
+    },
+    "trainer": {
+        "cuda_device": 0,
+        "grad_clipping": 5,
+        "num_epochs": 50,
+        "optimizer": {
+            "type": "adagrad",
+            "lr": 0.001
+        },
+        "patience": 10,
+        "validation_metric": "-loss"
+    },
+    "evaluate_on_test": true
+}

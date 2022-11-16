@@ -1,0 +1,44 @@
+{% set data = load_setup_py_data() %}
+
+package:
+  name: gector-cpu
+  version: {{ data.get('version') }}
+
+source:
+  path: ../../../gector
+
+build:
+  number: 0
+  noarch: python
+  script:
+    - cd $SRC_DIR
+    - "$PYTHON -m pip install . --no-deps -vv"
+
+requirements:
+  host:
+    - python>=3.8
+  run:
+    - python>=3.8
+    - allennlp>=2.9
+    - pytorch-cpu
+    - python-Levenshtein
+    - scikit-learn
+    - tokenizers>=0.11.1,!=0.11.3,<0.13
+    - overrides
+
+test:
+  # Python imports
+  imports:
+    - gector
+    - gector.basic_field_embedder
+    - gector.bert_token_embedder
+    - gector.datareader
+    - gector.seq2labels_model
+    - gector.tokenization
+    - gector.tokenizer_indexer
+    - gector.utils.helpers
+
+about:
+  home: https://github.com/EducationalTestingService/gector
+  license: Apache-2.0
+  license_file: LICENSE

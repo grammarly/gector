@@ -1,0 +1,8 @@
+include requirements.txt
+include environment.yml
+include README.md
+include LICENSE
+recursive-include gector/data *.txt
+recursive-include docs *.md
+recursive-exclude tests *.py
+recursive-exclude regression_tests *.py *.txt
