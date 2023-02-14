@@ -1,4 +1,4 @@
-name: gector
+name: gector_dev
 dependencies:
   - python=3.8
   - pytorch=1.10.0
@@ -8,6 +8,5 @@ dependencies:
   - sentencepiece
   - overrides=4.1.2
   - numpy
-  - pip:
-    - allennlp==0.9.0
+  - allennlp>=2.10
 

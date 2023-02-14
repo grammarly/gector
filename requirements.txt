@@ -1,5 +1,5 @@
 torch
-allennlp
+allennlp>=2.10
 python-Levenshtein
 transformers
 scikit-learn
