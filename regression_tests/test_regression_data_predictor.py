@@ -139,7 +139,8 @@ def main():
     model_path = download_weights()
 
     # Initialize model
-    model = Predictor.from_path(model_path, predictor_name="gec-predictor")
+    overrides = {"model.text_field_embedder.token_embedders.bert.load_weights": False}
+    model = Predictor.from_path(model_path, predictor_name="gec-predictor", overrides=overrides)
 
     # Generate predictions and compare to previous output.
     predict_and_compare(model)

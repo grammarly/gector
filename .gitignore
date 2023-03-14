@@ -136,3 +136,6 @@ dmypy.json
 
 # pytorch weights files
 *.th
+
+# Lock files
+*.lock

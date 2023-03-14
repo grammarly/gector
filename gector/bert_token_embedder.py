@@ -7,7 +7,7 @@ import torch
 import torch.nn.functional as F
 from allennlp.modules.token_embedders.token_embedder import TokenEmbedder
 from allennlp.nn import util
-from transformers import AutoModel, PreTrainedModel
+from transformers import AutoConfig, AutoModel, PreTrainedModel
 
 logger = logging.getLogger(__name__)
 
@@ -22,15 +22,30 @@ class PretrainedBertModel:
     _cache: Dict[str, PreTrainedModel] = {}
 
     @classmethod
-    def load(cls, model_name: str, cache_model: bool = True) -> PreTrainedModel:
+    def load(cls, model_name: str, cache_model: bool = True, load_weights: bool = True) -> PreTrainedModel:
+        
+        # If model has already been loaded and is in cache
         if model_name in cls._cache:
             return PretrainedBertModel._cache[model_name]
 
-        model = AutoModel.from_pretrained(model_name)
+        # if ``load_weights`` is set to false, do not download weights from Huggingface
+        if not load_weights:
+            model = AutoModel.from_config(
+                AutoConfig.from_pretrained(model_name)
+            )
+        else:
+            model = AutoModel.from_pretrained(model_name)
         if cache_model:
             cls._cache[model_name] = model
 
         return model
+    
+    @classmethod
+    def _clear_caches(cls):
+        """
+        Clears in-memory transformer caches.
+        """
+        cls._cache.clear()
 
 
 class BertEmbedder(TokenEmbedder):
@@ -249,8 +264,9 @@ class PretrainedBertEmbedder(BertEmbedder):
         requires_grad: bool = False,
         top_layer_only: bool = False,
         special_tokens_fix: int = 0,
+        load_weights: bool = True,
     ) -> None:
-        model = PretrainedBertModel.load(pretrained_model)
+        model = PretrainedBertModel.load(pretrained_model, load_weights=load_weights)
 
         for param in model.parameters():
             param.requires_grad = requires_grad
