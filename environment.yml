@@ -1,7 +1,7 @@
 name: gector_dev
 dependencies:
-  - python=3.8
-  - pytorch=1.10.0
+  - python
+  - pytorch-cpu
   - python-Levenshtein
   - transformers
   - scikit-learn
