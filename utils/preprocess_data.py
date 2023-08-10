@@ -99,6 +99,16 @@ def apply_merge_transformation(source_tokens, target_words, shift_idx):
 
 
 def is_sent_ok(sent, delimeters=SEQ_DELIMETERS):
+    """ 
+    Check if sent still remains any delimiters
+    Example: 
+        SEQ_DELIMETERS = {"tokens": " ", "labels": "SEPL|||SEPR", "operations": "SEPL__SEPR"}
+
+        print(is_sent_ok('This is a test sentence.'))  # True
+        print(is_sent_ok('This SEPL|||SEPR is a test sentence.'))  # False
+        print(is_sent_ok('This is a test SEPL__SEPR sentence.'))  # False
+        print(is_sent_ok('This is a SEPL__SEPR SEPL|||SEPR test sentence.'))  # False
+    """
     for del_val in delimeters.values():
         if del_val in sent and del_val != delimeters["tokens"]:
             return False
