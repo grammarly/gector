@@ -2,7 +2,7 @@ import argparse
 import os
 from difflib import SequenceMatcher
 
-import Levenshtein 
+import Levenshtein
 import numpy as np
 from tqdm import tqdm
 
@@ -35,7 +35,7 @@ def perfect_align(t, T, insertions_allowed=0,
 
     # Initialize with INFINITY (unknown)
     """
-
+    
     shape = (len(t) + 1, len(T) + 1, insertions_allowed + 1)
     dp = np.ones(shape, dtype=int) * int(1e9)
     come_from = np.ones(shape, dtype=int) * int(1e9)
