@@ -2,7 +2,7 @@ import argparse
 import os
 from difflib import SequenceMatcher
 
-import Levenshtein
+import Levenshtein 
 import numpy as np
 from tqdm import tqdm
 
@@ -12,11 +12,30 @@ from helpers import write_lines, read_parallel_lines, encode_verb_form, \
 
 def perfect_align(t, T, insertions_allowed=0,
                   cost_function=Levenshtein.distance):
+    """
+    Computes the total cost of perfect alignment
+    Provides the detailed sequence of edit operations to convert the first sequence into the second sequence
+
+    Args:
+        t (list): List of source tokens to be aligned
+        T (list): List of target tokens to be aligned
+        insertions_allowed (int, optional):  maximum number of insertions allowed when trying to align the two sequences
+        Defaults to 0.
+        cost_function (function, optional): cost function to caculate difference between two tokens. 
+        Defaults to Levenshtein.distance.
+
+    Returns:
+        _type_: _description_
+        dp[len(t), len(T)].min(): minimum cost of perfect alignment
+        list(reversed(alignment)): aligning sequence t with sequence T.
+    NOTE: 
     # dp[i, j, k] is a minimal cost of matching first `i` tokens of `t` with
     # first `j` tokens of `T`, after making `k` insertions after last match of
     # token from `t`. In other words t[:i] aligned with T[:j].
 
     # Initialize with INFINITY (unknown)
+    """
+
     shape = (len(t) + 1, len(T) + 1, insertions_allowed + 1)
     dp = np.ones(shape, dtype=int) * int(1e9)
     come_from = np.ones(shape, dtype=int) * int(1e9)
@@ -31,8 +50,8 @@ def perfect_align(t, T, insertions_allowed=0,
                     # t[i] with following tokens T[j:k].
                     for k in range(j, len(T) + 1):
                         transform = \
-                            apply_transformation(t[i], '   '.join(T[j:k]))
-                        if transform:
+                            apply_transformation(t[i], '   '.join(T[j:k])) 
+                        if transform: # Author choose g-transform = 0  
                             cost = 0
                         else:
                             cost = cost_function(t[i], '   '.join(T[j:k]))
