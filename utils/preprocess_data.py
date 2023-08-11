@@ -50,7 +50,7 @@ def perfect_align(t, T, insertions_allowed=0,
                     # t[i] with following tokens T[j:k].
                     for k in range(j, len(T) + 1):
                         transform = \
-                            apply_transformation(t[i], '   '.join(T[j:k])) 
+                            apply_transformation(t[i], '   '.join(T[j:k]))
                         if transform: # Author choose g-transform = 0  
                             cost = 0
                         else:
@@ -178,6 +178,7 @@ def check_split(source_token, target_tokens):
     else:
         return None
 
+
 def check_merge(source_tokens, target_tokens):
     """ 
     Check if source_tokens can be merged into target_tokens
@@ -199,6 +200,7 @@ def check_swap(source_tokens, target_tokens):
 
 
 def check_plural(source_token, target_token):
+    """ check if source token is the plural form of target token """
     if source_token.endswith("s") and source_token[:-1] == target_token:
         return "$TRANSFORM_AGREEMENT_SINGULAR"
     elif target_token.endswith("s") and source_token == target_token[:-1]:
@@ -431,7 +433,7 @@ def add_labels_to_the_tokens(source_tokens, labels, delimeters=SEQ_DELIMETERS):
         all_tags = delimeters['operations'].join(label_list)
         comb_record = token + delimeters['labels'] + all_tags # append token and operatins
         tokens_with_all_tags.append(comb_record)
-    return delimeters['tokens'].join(tokens_with_all_tags)  
+    return delimeters['tokens'].join(tokens_with_all_tags)
 
 
 def convert_data_from_raw_files(source_file, target_file, output_file, chunk_size):
@@ -484,7 +486,6 @@ def convert_data_from_raw_files(source_file, target_file, output_file, chunk_siz
         write_lines(output_file, tagged, 'a')
 
 
-# This function converts the labels into edits
 def convert_labels_into_edits(labels):
     """Converts a list of labels into a list of edits.
     Args:
@@ -492,13 +493,14 @@ def convert_labels_into_edits(labels):
     Returns:
         list of tuple of (int, int, list of str): A list of edits.
     """
-    edits = []
+    all_edits = []
     for i, label_list in enumerate(labels):
         if label_list == ["$KEEP"]:
             continue
         else:
-            edits.append((i - 1, i, label_list))
-    return edits
+            edit = [(i - 1, i), label_list]
+            all_edits.append(edit)
+    return all_edits
 
 
 def get_target_sent_by_levels(source_tokens, labels):
