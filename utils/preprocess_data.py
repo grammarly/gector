@@ -258,7 +258,7 @@ def align_sequences(source_sent, target_sent):
         target_sent (list): Target sentence
 
     Returns:
-        list: [start transform idx, end transform idx, transform type]
+        string: string taged each token with transform operation
         transform type in list [$APPEND, $REPLACE, $TRANSFORM, $DELETE, MERGE_{merge_type}]
     """
     # check if sent is OK
@@ -304,9 +304,9 @@ def align_sequences(source_sent, target_sent):
                 all_edits.extend(edits)
 
     # get labels
-    labels = convert_edits_into_labels(source_tokens, all_edits) # label each sentence 
+    labels = convert_edits_into_labels(source_tokens, all_edits) # label each token 
     # match tags to source tokens
-    sent_with_tags = add_labels_to_the_tokens(source_tokens, labels)
+    sent_with_tags = add_labels_to_the_tokens(source_tokens, labels) # create a sentence from list of labels
     return sent_with_tags
 
 
@@ -415,13 +415,23 @@ def convert_alignments_into_edits(alignment, shift_idx):
 
 
 def add_labels_to_the_tokens(source_tokens, labels, delimeters=SEQ_DELIMETERS):
+    """ create a sentence from list of labels
+
+    Args:
+        source_tokens (list): source tokens
+        labels (list): label for transform operation 
+        delimeters (dictionary, optional): delimeter for tokens, labels and operation. Defaults to SEQ_DELIMETERS.
+
+    Returns:
+        string : string of tokens with all tags operation
+    """
     tokens_with_all_tags = []
-    source_tokens_with_start = [START_TOKEN] + source_tokens
+    source_tokens_with_start = [START_TOKEN] + source_tokens # add start token
     for token, label_list in zip(source_tokens_with_start, labels):
         all_tags = delimeters['operations'].join(label_list)
-        comb_record = token + delimeters['labels'] + all_tags
+        comb_record = token + delimeters['labels'] + all_tags # append token and operatins
         tokens_with_all_tags.append(comb_record)
-    return delimeters['tokens'].join(tokens_with_all_tags)
+    return delimeters['tokens'].join(tokens_with_all_tags)  
 
 
 def convert_data_from_raw_files(source_file, target_file, output_file, chunk_size):
@@ -474,15 +484,21 @@ def convert_data_from_raw_files(source_file, target_file, output_file, chunk_siz
         write_lines(output_file, tagged, 'a')
 
 
+# This function converts the labels into edits
 def convert_labels_into_edits(labels):
-    all_edits = []
+    """Converts a list of labels into a list of edits.
+    Args:
+        labels (list of lists of str): A list of labels for each word.
+    Returns:
+        list of tuple of (int, int, list of str): A list of edits.
+    """
+    edits = []
     for i, label_list in enumerate(labels):
         if label_list == ["$KEEP"]:
             continue
         else:
-            edit = [(i - 1, i), label_list]
-            all_edits.append(edit)
-    return all_edits
+            edits.append((i - 1, i, label_list))
+    return edits
 
 
 def get_target_sent_by_levels(source_tokens, labels):
