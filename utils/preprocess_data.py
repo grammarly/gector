@@ -12,13 +12,32 @@ from helpers import write_lines, read_parallel_lines, encode_verb_form, \
 
 def perfect_align(t, T, insertions_allowed=0,
                   cost_function=Levenshtein.distance):
-    # dp[i, j, k] is a minimal cost of matching first `i` tokens of `t` with
-    # first `j` tokens of `T`, after making `k` insertions after last match of
-    # token from `t`. In other words t[:i] aligned with T[:j].
+    """
+    Computes the total cost of perfect alignment
+    Provides the detailed sequence of edit operations to convert the first sequence into the second sequence
 
-    # Initialize with INFINITY (unknown)
+    Args:
+        t (list): List of source tokens to be aligned
+        T (list): List of target tokens to be aligned
+        insertions_allowed (int, optional):  maximum number of insertions allowed when trying to align the two sequences
+        Defaults to 0.
+        cost_function (function, optional): cost function to calculate difference between two tokens. 
+        Defaults to Levenshtein.distance.
+
+    Returns:
+        dp[len(t), len(T)].min(): minimum cost of perfect alignment
+        list(reversed(alignment)): aligning sequence t with sequence T.
+        element in alignment: [INSERT, REPLACE_{word}, (start, end)]
+    """
+    
     shape = (len(t) + 1, len(T) + 1, insertions_allowed + 1)
     dp = np.ones(shape, dtype=int) * int(1e9)
+    """        
+    dp[i, j, k] is a minimal cost of matching first `i` tokens of `t` with
+    first `j` tokens of `T`, after making `k` insertions after last match of
+    token from `t`. In other words t[:i] aligned with T[:j].
+    Initialize with INFINITY (unknown)
+    """
     come_from = np.ones(shape, dtype=int) * int(1e9)
     come_from_ins = np.ones(shape, dtype=int) * int(1e9)
 
@@ -32,7 +51,7 @@ def perfect_align(t, T, insertions_allowed=0,
                     for k in range(j, len(T) + 1):
                         transform = \
                             apply_transformation(t[i], '   '.join(T[j:k]))
-                        if transform:
+                        if transform: # Author choose g-transform = 0  
                             cost = 0
                         else:
                             cost = cost_function(t[i], '   '.join(T[j:k]))
@@ -81,6 +100,16 @@ def _split(token):
 
 
 def apply_merge_transformation(source_tokens, target_words, shift_idx):
+    """ check what type of merge transformation can be applied
+
+    Args:
+        source_tokens (list): Subset of source tokens from i1 to i2
+        target_words (list): Subset of target tokens from j1 to j2
+        shift_idx (int): index of i1 in the original sequence 
+
+    Returns:
+        string: $MERGE_SWAP or $MERGE_SPACE or MERGE_HYPHEN
+    """
     edits = []
     if len(source_tokens) > 1 and len(target_words) == 1:
         # check merge
@@ -99,6 +128,16 @@ def apply_merge_transformation(source_tokens, target_words, shift_idx):
 
 
 def is_sent_ok(sent, delimeters=SEQ_DELIMETERS):
+    """ 
+    Check if sent still remains any delimiters
+    Example: 
+        SEQ_DELIMETERS = {"tokens": " ", "labels": "SEPL|||SEPR", "operations": "SEPL__SEPR"}
+
+        print(is_sent_ok('This is a test sentence.'))  # True
+        print(is_sent_ok('This SEPL|||SEPR is a test sentence.'))  # False
+        print(is_sent_ok('This is a test SEPL__SEPR sentence.'))  # False
+        print(is_sent_ok('This is a SEPL__SEPR SEPL|||SEPR test sentence.'))  # False
+    """
     for del_val in delimeters.values():
         if del_val in sent and del_val != delimeters["tokens"]:
             return False
@@ -130,6 +169,10 @@ def check_equal(source_token, target_token):
 
 
 def check_split(source_token, target_tokens):
+    """ 
+    Check if source token can be split into target tokens
+    
+    """
     if source_token.split("-") == target_tokens:
         return "$TRANSFORM_SPLIT_HYPHEN"
     else:
@@ -137,6 +180,9 @@ def check_split(source_token, target_tokens):
 
 
 def check_merge(source_tokens, target_tokens):
+    """ 
+    Check if source_tokens can be merged into target_tokens
+    """
     if "".join(source_tokens) == "".join(target_tokens):
         return "$MERGE_SPACE"
     elif "-".join(source_tokens) == "-".join(target_tokens):
@@ -146,6 +192,7 @@ def check_merge(source_tokens, target_tokens):
 
 
 def check_swap(source_tokens, target_tokens):
+    """check if source_tokens can be swapped into target_tokens"""
     if source_tokens == [x for x in reversed(target_tokens)]:
         return "$MERGE_SWAP"
     else:
@@ -153,6 +200,7 @@ def check_swap(source_tokens, target_tokens):
 
 
 def check_plural(source_token, target_token):
+    """ check if source token is the plural form of target token """
     if source_token.endswith("s") and source_token[:-1] == target_token:
         return "$TRANSFORM_AGREEMENT_SINGULAR"
     elif target_token.endswith("s") and source_token == target_token[:-1]:
@@ -162,6 +210,16 @@ def check_plural(source_token, target_token):
 
 
 def check_verb(source_token, target_token):
+    """ apply g-transform  for verb form
+
+    Args:
+        source_token (list): source token
+        target_token (list): target token
+
+    Returns:
+        string : $TRANSFORM_VERB_{encoding} or None 
+        example: make:makes -> $TRANSFORM_VERB_VB_VBZ
+    """
     encoding = encode_verb_form(source_token, target_token)
     if encoding:
         return f"$TRANSFORM_VERB_{encoding}"
@@ -170,6 +228,15 @@ def check_verb(source_token, target_token):
 
 
 def apply_transformation(source_token, target_token):
+    """ return how to convert source to target with tag 
+
+    Args:
+        source_token (list): source token
+        target_token (list): target token
+
+    Returns:
+        string : return a transform from list [$KEEP, TRANSFORM_CASE_{type}, TRANSFORM_VERB_{encoding},$TRANSFORM_AGREEMENT_{SINGULAR or PLURAL} 
+    """
     target_tokens = target_token.split()
     if len(target_tokens) > 1:
         # check split
@@ -177,6 +244,7 @@ def apply_transformation(source_token, target_token):
         if transform:
             return transform
     checks = [check_equal, check_casetype, check_verb, check_plural]
+    # return a transform from list [$KEEP, TRANSFORM_CASE_{type}, TRANSFORM_VERB_{encoding},$TRANSFORM_AGREEMENT_{SINGULAR or PLURAL} ]
     for check in checks:
         transform = check(source_token, target_token)
         if transform:
@@ -185,12 +253,22 @@ def apply_transformation(source_token, target_token):
 
 
 def align_sequences(source_sent, target_sent):
+    """ return sentence with tags
+
+    Args:
+        source_sent (list): Source sentence
+        target_sent (list): Target sentence
+
+    Returns:
+        string: string tagged each token with transform operation
+        transform type in list [$APPEND, $REPLACE, $TRANSFORM, $DELETE, MERGE_{merge_type}]
+    """
     # check if sent is OK
     if not is_sent_ok(source_sent) or not is_sent_ok(target_sent):
         return None
     source_tokens = source_sent.split()
     target_tokens = target_sent.split()
-    matcher = SequenceMatcher(None, source_tokens, target_tokens)
+    matcher = SequenceMatcher(None, source_tokens, target_tokens)  #  how to convert source to target with tags 'delete', 'insert', 'replace'
     diffs = list(matcher.get_opcodes())
     all_edits = []
     for diff in diffs:
@@ -200,7 +278,7 @@ def align_sequences(source_sent, target_sent):
         if tag == 'equal':
             continue
         elif tag == 'delete':
-            # delete all words separatly
+            # delete all words separately
             for j in range(i2 - i1):
                 edit = [(i1 + j, i1 + j + 1), '$DELETE']
                 all_edits.append(edit)
@@ -212,28 +290,41 @@ def align_sequences(source_sent, target_sent):
         else:
             # check merge first of all
             edits = apply_merge_transformation(source_part, target_part,
-                                               shift_idx=i1)
+                                               shift_idx=i1) # return $MERGE_SWAP or $MERGE_SPACE or MERGE_HYPHEN
             if edits:
                 all_edits.extend(edits)
                 continue
 
             # normalize alignments if need (make them singleton)
             _, alignments = perfect_align(source_part, target_part,
-                                          insertions_allowed=0)
+                                          insertions_allowed=0) 
+            # alignment = [INSERT or  REPLACE_{word}, (start, end)]
             for alignment in alignments:
                 new_shift = alignment[2][0]
                 edits = convert_alignments_into_edits(alignment,
-                                                      shift_idx=i1 + new_shift)
+                                                      shift_idx=i1 + new_shift) # return transform type in list [$APPEND, $REPLACE, $TRANSFORM, $DELETE]
                 all_edits.extend(edits)
 
     # get labels
-    labels = convert_edits_into_labels(source_tokens, all_edits)
+    labels = convert_edits_into_labels(source_tokens, all_edits) # label each token 
     # match tags to source tokens
-    sent_with_tags = add_labels_to_the_tokens(source_tokens, labels)
+    sent_with_tags = add_labels_to_the_tokens(source_tokens, labels) # create a sentence from list of labels
     return sent_with_tags
 
 
 def convert_edits_into_labels(source_tokens, all_edits):
+    """ 
+
+    Args:
+        source_tokens (list): list of source tokens 
+        all_edits (list): list of transformations steps $APPEND, $REPLACE, $TRANSFORM_{transform type}, $DELETE, $MERGE_{merge_type} operation  
+
+    Raises:
+        Exception: Unknown operation type
+
+    Returns:
+        list : list of tag for each token $KEEP, $APPEND, $REPLACE, $TRANSFORM_{transform type}, $DELETE, $MERGE_{merge_type}
+    """
     # make sure that edits are flat
     flat_edits = []
     for edit in all_edits:
@@ -263,6 +354,16 @@ def convert_edits_into_labels(source_tokens, all_edits):
 
 
 def convert_alignments_into_edits(alignment, shift_idx):
+    """ Convert alignments into edits list
+
+    Args:
+        alignment (list): # [INSERT or REPLACE_{word}, (start, end)]
+        shift_idx (int): position of the first token in the target sequence
+
+    Returns:
+        list: [start transform idx, end transform idx, transform type]
+        transform type in list [$APPEND, $REPLACE, $TRANSFORM_{transform type}, $DELETE]
+    """
     edits = []
     action, target_tokens, new_idx = alignment
     source_token = action.replace("REPLACE_", "")
@@ -316,16 +417,34 @@ def convert_alignments_into_edits(alignment, shift_idx):
 
 
 def add_labels_to_the_tokens(source_tokens, labels, delimeters=SEQ_DELIMETERS):
+    """ create a sentence from list of labels
+
+    Args:
+        source_tokens (list): source tokens
+        labels (list): label for transform operation 
+        delimeters (dictionary, optional): delimeter for tokens, labels and operation. Defaults to SEQ_DELIMETERS.
+
+    Returns:
+        string : string of tokens with all tags operation
+    """
     tokens_with_all_tags = []
-    source_tokens_with_start = [START_TOKEN] + source_tokens
+    source_tokens_with_start = [START_TOKEN] + source_tokens # add start token
     for token, label_list in zip(source_tokens_with_start, labels):
         all_tags = delimeters['operations'].join(label_list)
-        comb_record = token + delimeters['labels'] + all_tags
+        comb_record = token + delimeters['labels'] + all_tags # append token and operatins
         tokens_with_all_tags.append(comb_record)
     return delimeters['tokens'].join(tokens_with_all_tags)
 
 
 def convert_data_from_raw_files(source_file, target_file, output_file, chunk_size):
+    """ read data from raw files and convert them into tagged lines
+
+    Args:
+        source_file (string): source path
+        target_file (string): target path
+        output_file (string): output path
+        chunk_size (int): chunk size
+    """
     tagged = []
     source_data, target_data = read_parallel_lines(source_file, target_file)
     print(f"The size of raw dataset is {len(source_data)}")
@@ -368,6 +487,12 @@ def convert_data_from_raw_files(source_file, target_file, output_file, chunk_siz
 
 
 def convert_labels_into_edits(labels):
+    """Converts a list of labels into a list of edits.
+    Args:
+        labels (list of lists of str): A list of labels for each word.
+    Returns:
+        list of tuple of (int, int, list of str): A list of edits.
+    """
     all_edits = []
     for i, label_list in enumerate(labels):
         if label_list == ["$KEEP"]:

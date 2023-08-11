@@ -177,6 +177,8 @@ def decode_verb_form(original):
 def encode_verb_form(original_word, corrected_word):
     decoding_request = original_word + "_" + corrected_word
     decoding_response = ENCODE_VERB_DICT.get(decoding_request, "").strip()
+    # example deocding request: make_makes --> encoding "VBD_VBZ" 
+    # see more in the A.Appendix in paper
     if original_word and decoding_response:
         answer = decoding_response
     else:
