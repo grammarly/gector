@@ -21,7 +21,7 @@ def perfect_align(t, T, insertions_allowed=0,
         T (list): List of target tokens to be aligned
         insertions_allowed (int, optional):  maximum number of insertions allowed when trying to align the two sequences
         Defaults to 0.
-        cost_function (function, optional): cost function to caculate difference between two tokens. 
+        cost_function (function, optional): cost function to calculate difference between two tokens. 
         Defaults to Levenshtein.distance.
 
     Returns:
@@ -228,7 +228,7 @@ def check_verb(source_token, target_token):
 
 
 def apply_transformation(source_token, target_token):
-    """ reutrn how to convert source to target with tag 
+    """ return how to convert source to target with tag 
 
     Args:
         source_token (list): source token
@@ -260,7 +260,7 @@ def align_sequences(source_sent, target_sent):
         target_sent (list): Target sentence
 
     Returns:
-        string: string taged each token with transform operation
+        string: string tagged each token with transform operation
         transform type in list [$APPEND, $REPLACE, $TRANSFORM, $DELETE, MERGE_{merge_type}]
     """
     # check if sent is OK
@@ -268,7 +268,7 @@ def align_sequences(source_sent, target_sent):
         return None
     source_tokens = source_sent.split()
     target_tokens = target_sent.split()
-    matcher = SequenceMatcher(None, source_tokens, target_tokens)  #  how to convert source to target with tage 'delete', 'insert', 'replace'
+    matcher = SequenceMatcher(None, source_tokens, target_tokens)  #  how to convert source to target with tags 'delete', 'insert', 'replace'
     diffs = list(matcher.get_opcodes())
     all_edits = []
     for diff in diffs:
@@ -278,7 +278,7 @@ def align_sequences(source_sent, target_sent):
         if tag == 'equal':
             continue
         elif tag == 'delete':
-            # delete all words separatly
+            # delete all words separately
             for j in range(i2 - i1):
                 edit = [(i1 + j, i1 + j + 1), '$DELETE']
                 all_edits.append(edit)
@@ -290,7 +290,7 @@ def align_sequences(source_sent, target_sent):
         else:
             # check merge first of all
             edits = apply_merge_transformation(source_part, target_part,
-                                               shift_idx=i1) # reutrn $MERGE_SWAP or $MERGE_SPACE or MERGE_HYPHEN
+                                               shift_idx=i1) # return $MERGE_SWAP or $MERGE_SPACE or MERGE_HYPHEN
             if edits:
                 all_edits.extend(edits)
                 continue
@@ -298,7 +298,7 @@ def align_sequences(source_sent, target_sent):
             # normalize alignments if need (make them singleton)
             _, alignments = perfect_align(source_part, target_part,
                                           insertions_allowed=0) 
-            # elignment = [INSERT or  REPLACE_{word}, (start, end)]
+            # alignment = [INSERT or  REPLACE_{word}, (start, end)]
             for alignment in alignments:
                 new_shift = alignment[2][0]
                 edits = convert_alignments_into_edits(alignment,
@@ -316,7 +316,7 @@ def convert_edits_into_labels(source_tokens, all_edits):
     """ 
 
     Args:
-        source_tokens (list): list of source tokensq 
+        source_tokens (list): list of source tokens 
         all_edits (list): list of transformations steps $APPEND, $REPLACE, $TRANSFORM_{transform type}, $DELETE, $MERGE_{merge_type} operation  
 
     Raises:
